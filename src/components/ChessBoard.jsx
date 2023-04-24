@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../axios";
-import axios from "axios";
+import getPlayerGames from "../api/getPlayerGames";
+import { useQuery } from "@tanstack/react-query";
+import getPossibleMoves from "../api/getPossibleMoves";
+import postMove from "../api/postMove";
 
-export default function ChessBoard(props) {
+export default function ChessBoard({ game }) {
   const [gameData, setGameData] = useState(null);
   const [board, setBoard] = useState(null);
   const [selectedPiece, setSelectedPiece] = useState(null);
@@ -40,6 +43,10 @@ export default function ChessBoard(props) {
     transform: `rotate(180deg)`,
   };
 
+  const isRedSpace = (y, x) => (y + x) % 2 !== 0;
+
+  const isEnemyPiece = (color) => color !== player.color;
+
   function initializeBoard() {
     const board = [];
     for (let i = 0; i < 8; i++) {
@@ -53,40 +60,47 @@ export default function ChessBoard(props) {
   }
 
   async function handleClick(e, piece, y1, x1) {
-    if (e.target.dataset.color !== player.color && !selectedPiece) {
-      return;
-    }
-    if (selectedPiece && isPossibleMove(y1, x1)) {
-      const { x, y } = selectedPiece;
-      const res = await axiosInstance.post(
-        `game/1/move?x0=${x}&y0=${y}&x1=${x1}&y1=${y1}`
-      );
-      setGameData(res.data);
-      return setSelectedPiece(null);
+    const color = e.currentTarget.dataset.color;
+    if (isEnemyPiece(color) && !isPossibleMove(y1, x1)) return;
+
+    if (isPossibleMove(y1, x1)) {
+      return await makeMove(y1, x1);
     }
     setSelectedPiece(piece);
-    const res = await axiosInstance.get(
-      `game/${gameData.id}/possible-moves?x=${piece.x}&y=${piece.y}`
-    );
-    const possibleMoves = res.data.possibleMoves;
+    if (!piece) return;
+    const possibleMoves = await getPossibleMoves(gameData.id, piece.y, piece.x);
     setSelectedPiece((prev) => ({ ...prev, possibleMoves }));
   }
 
+  async function makeMove(y1, x1) {
+    const { x, y } = selectedPiece;
+    const res = await postMove(x, y, y1, x1);
+    setGameData(res);
+    return setSelectedPiece(null);
+  }
+
   function handleMouseOver(e, y, x) {
+    const isRed = isRedSpace(y, x);
     const possibleMoves = selectedPiece?.possibleMoves;
     if (!possibleMoves?.length || !isPossibleMove(y, x)) {
       return;
     }
-    e.target.classList.add("bg-green-200");
+    if (isRed) e.currentTarget.classList.toggle("bg-red-500");
+    e.currentTarget.classList.add("bg-green-200");
+    e.currentTarget.classList.add("cursor-pointer");
+
   }
 
   function handleMouseOut(e, y, x) {
-    e.target.classList.remove("bg-green-200");
+    const space = e.currentTarget;
+    space.classList.remove("bg-green-200");
+    if (isRedSpace(y, x) && !space.classList.contains("bg-red-500")) space.classList.add("bg-red-500");
+    if (isPossibleMove(y, x)) space.classList.remove("cursor-pointer");
   }
 
   function isPossibleMove(y, x) {
     if (
-      !selectedPiece?.possibleMoves.find((move) => move.x === x && move.y === y)
+      !selectedPiece?.possibleMoves?.find((move) => move.x === x && move.y === y)
     ) {
       return false;
     }
@@ -95,7 +109,7 @@ export default function ChessBoard(props) {
 
   useEffect(() => {
     axiosInstance
-      .get("game/1")
+      .get(`game/${game.id}`)
       .then((data) => setGameData(data.data))
       .catch((error) => console.error(error));
   }, []);
@@ -111,36 +125,59 @@ export default function ChessBoard(props) {
   }, [player]);
 
   return (
-    <div style={isMirrored ? mirroredStyle : null}>
-      {board?.map((row, r) => (
-        <div key={r} className="flex h-12 border-t-2 border-r-2 border-black">
-          {row?.map((col, c) => {
-            const piece = col;
-            const greenColor =
-              selectedPiece?.id === piece.id ? "text-green-500" : "";
-            const cursor =
-              piece?.color == player?.color
-                ? "cursor-pointer"
-                : "cursor-default";
-            const bgColor = (r + c) % 2 === 0 ? "bg-gray-300" : "bg-red-500";
-            return (
-              <div
-                key={r + c}
-                className={`w-12 h-12 text-5xl border-b-2 border-l-2 border-black ${bgColor} ${greenColor} ${cursor}`}
-                onClick={(e) => handleClick(e, piece, r, c)}
-                onMouseOver={(e) => handleMouseOver(e, r, c)}
-                onMouseOut={(e) => handleMouseOut(e, r, c)}
-                data-color={piece?.color}
-                style={isMirrored ? mirroredStyle : null}
-              >
-                <span >
-                  {piece ? chessPieces[piece.type][piece.color] : ""}
-                </span>
-              </div>
-            );
-          })}
+    <div className="flex flex-col gap-2">
+      <div className="text-3xl flex justify-between pl-11 pr-4">
+        {"ABCDEFGH".split("").map((c) => (
+          <div key={c}>
+            <span>{c}</span>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <div className="text-3xl flex flex-col justify-between">
+          {"12345678".split("").map((c) => (
+            <div key={c}>
+              <span>{c}</span>
+            </div>
+          ))}
         </div>
-      ))}
+        <div
+          className="border-t-2 border-r-2 border-black"
+          style={isMirrored ? mirroredStyle : null}
+        >
+          {board?.map((row, r) => (
+            <div key={r} className="flex h-12">
+              {row?.map((col, c) => {
+                const piece = col;
+                const greenColor =
+                  selectedPiece?.id === piece.id ? "text-green-500" : "";
+                const cursor =
+                  piece?.color == player?.color
+                    ? "cursor-pointer"
+                    : "cursor-default";
+                const bgColor = !isRedSpace(r, c)
+                  ? "bg-gray-300"
+                  : "bg-red-500";
+                return (
+                  <div
+                    key={r + c}
+                    className={`w-12 h-12 text-5xl border-b-2 border-l-2 border-black ${bgColor} ${greenColor} ${cursor}`}
+                    onMouseOver={(e) => handleMouseOver(e, r, c)}
+                    onMouseOut={(e) => handleMouseOut(e, r, c)}
+                    style={isMirrored ? mirroredStyle : null}
+                    data-color={piece?.color}
+                    onClick={(e) => handleClick(e, piece, r, c)}
+                  >
+                    <span>
+                      {piece ? chessPieces[piece.type][piece.color] : ""}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
