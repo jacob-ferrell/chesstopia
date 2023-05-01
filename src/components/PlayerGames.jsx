@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import getPlayerGames from "../api/getPlayerGames";
 
-export default function PlayerGames({game, setGame}) {
-    const {data, isLoading} = useQuery(['games', 1],  () => getPlayerGames(1));
+export default function PlayerGames({game, setGame, user}) {
+    const {data, isLoading} = useQuery(['games', user.id],  () => getPlayerGames(user.id));
 
     if (isLoading) return <div>Loading...</div>
 

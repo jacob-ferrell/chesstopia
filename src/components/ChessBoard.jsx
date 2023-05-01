@@ -4,13 +4,16 @@ import getPlayerGames from "../api/getPlayerGames";
 import { useQuery } from "@tanstack/react-query";
 import getPossibleMoves from "../api/getPossibleMoves";
 import postMove from "../api/postMove";
+import axios from "axios";
+import getCurrentUser from "../api/getCurrentUser";
 
 export default function ChessBoard({ game }) {
   const [gameData, setGameData] = useState(null);
   const [board, setBoard] = useState(null);
   const [selectedPiece, setSelectedPiece] = useState(null);
-  const [player, setPlayer] = useState({ color: "WHITE" });
+  const [player, setPlayer] = useState(null);
   const [isMirrored, setIsMirrored] = useState(false);
+  const [isPlayerTurn, setIsPlayerTurn] = useState(false);
 
   const chessPieces = {
     KING: {
@@ -88,31 +91,52 @@ export default function ChessBoard({ game }) {
     if (isRed) e.currentTarget.classList.toggle("bg-red-500");
     e.currentTarget.classList.add("bg-green-200");
     e.currentTarget.classList.add("cursor-pointer");
-
   }
 
   function handleMouseOut(e, y, x) {
     const space = e.currentTarget;
     space.classList.remove("bg-green-200");
-    if (isRedSpace(y, x) && !space.classList.contains("bg-red-500")) space.classList.add("bg-red-500");
+    if (isRedSpace(y, x) && !space.classList.contains("bg-red-500"))
+      space.classList.add("bg-red-500");
     if (isPossibleMove(y, x)) space.classList.remove("cursor-pointer");
   }
 
   function isPossibleMove(y, x) {
     if (
-      !selectedPiece?.possibleMoves?.find((move) => move.x === x && move.y === y)
+      !selectedPiece?.possibleMoves?.find(
+        (move) => move.x === x && move.y === y
+      )
     ) {
       return false;
     }
     return true;
   }
 
-  useEffect(() => {
-    axiosInstance
+/*   useEffect(() => {
+    const interval = setInterval(() => {
+      axiosInstance
       .get(`game/${game.id}`)
       .then((data) => setGameData(data.data))
       .catch((error) => console.error(error));
+    }, 5000000000000);
+  }, []); */
+
+  useEffect(() => {
+      axiosInstance
+      .get(`game/${game.id}`)
+      .then((data) => setGameData(data.data))
+      .catch((error) => console.error(error));
+    
   }, []);
+
+  useEffect(() => {
+    getCurrentUser().then((res) => {
+      const { email } = res.data;
+      const color = gameData?.whitePlayer.email === email ? 'WHITE' : 'BLACK';
+      setPlayer({...res.data, color});
+    });
+    setIsPlayerTurn(gameData?.currentTurn?.email === player?.email);
+  }, [gameData]);
 
   useEffect(() => {
     if (gameData?.pieces) {
@@ -166,7 +190,7 @@ export default function ChessBoard({ game }) {
                     onMouseOut={(e) => handleMouseOut(e, r, c)}
                     style={isMirrored ? mirroredStyle : null}
                     data-color={piece?.color}
-                    onClick={(e) => handleClick(e, piece, r, c)}
+                    onClick={(e) => isPlayerTurn ? handleClick(e, piece, r, c) : null }
                   >
                     <span>
                       {piece ? chessPieces[piece.type][piece.color] : ""}
