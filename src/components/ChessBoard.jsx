@@ -7,13 +7,13 @@ import postMove from "../api/postMove";
 import axios from "axios";
 import getCurrentUser from "../api/getCurrentUser";
 
-export default function ChessBoard({ game }) {
-  const [gameData, setGameData] = useState(null);
+export default function ChessBoard({ game, setGame, player}) {
   const [board, setBoard] = useState(null);
   const [selectedPiece, setSelectedPiece] = useState(null);
-  const [player, setPlayer] = useState(null);
-  const [isMirrored, setIsMirrored] = useState(false);
-  const [isPlayerTurn, setIsPlayerTurn] = useState(false);
+  const isMirrored = player?.color === "BLACK";
+  const letters = !isMirrored ? "ABCDEFGH" : "HGFEDCBA";
+  const numbers = isMirrored ? "12345678" : "87654321";
+  const isPlayerTurn = player?.isTurn;
 
   const chessPieces = {
     KING: {
@@ -55,7 +55,7 @@ export default function ChessBoard({ game }) {
     for (let i = 0; i < 8; i++) {
       board[i] = new Array(8).fill("");
     }
-    gameData?.pieces.forEach((piece) => {
+    game?.pieces.forEach((piece) => {
       const { y, x } = piece;
       board[y][x] = piece;
     });
@@ -72,14 +72,14 @@ export default function ChessBoard({ game }) {
     }
     setSelectedPiece(piece);
     if (!piece) return;
-    const possibleMoves = await getPossibleMoves(gameData.id, piece.y, piece.x);
+    const possibleMoves = await getPossibleMoves(game.id, piece.y, piece.x);
     setSelectedPiece((prev) => ({ ...prev, possibleMoves }));
   }
 
   async function makeMove(y1, x1) {
     const { x, y } = selectedPiece;
     const res = await postMove(x, y, y1, x1);
-    setGameData(res);
+    setGame(res.data);
     return setSelectedPiece(null);
   }
 
@@ -122,37 +122,17 @@ export default function ChessBoard({ game }) {
     }, 5000000000000);
   }, []); */
 
-  useEffect(() => {
-      axiosInstance
-      .get(`game/${game.id}`)
-      .then((data) => setGameData(data.data))
-      .catch((error) => console.error(error));
-    
-  }, []);
 
   useEffect(() => {
-    getCurrentUser().then((res) => {
-      const { email } = res.data;
-      const color = gameData?.whitePlayer.email === email ? 'WHITE' : 'BLACK';
-      setPlayer({...res.data, color});
-    });
-    setIsPlayerTurn(gameData?.currentTurn?.email === player?.email);
-  }, [gameData]);
-
-  useEffect(() => {
-    if (gameData?.pieces) {
+    if (game?.pieces) {
       setBoard(initializeBoard());
     }
-  }, [gameData]);
-
-  useEffect(() => {
-    setIsMirrored(player?.color === "BLACK");
-  }, [player]);
+  }, [game]);
 
   return (
     <div className="flex flex-col gap-2">
       <div className="text-3xl flex justify-between pl-11 pr-4">
-        {"ABCDEFGH".split("").map((c) => (
+        {letters.split("").map((c) => (
           <div key={c}>
             <span>{c}</span>
           </div>
@@ -160,7 +140,7 @@ export default function ChessBoard({ game }) {
       </div>
       <div className="flex gap-2">
         <div className="text-3xl flex flex-col justify-between">
-          {"12345678".split("").map((c) => (
+          {numbers.split("").map((c) => (
             <div key={c}>
               <span>{c}</span>
             </div>

@@ -1,10 +1,12 @@
 import "./App.css";
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "./axios";
 import ChessBoard from "./components/ChessBoard";
 import PlayerGames from "./components/PlayerGames";
 import getCurrentUser from "./api/getCurrentUser";
 import Game from "./components/Game";
+import getGame from "./api/getGame";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -13,7 +15,7 @@ function App() {
   useEffect(() => {
     if (!localStorage.getItem("token")) return;
     getCurrentUser().then((res) => {
-      if (res.status !== 200) return;
+      if (res.status !== 200) return localStorage.removeItem("token");
       setUser(res.data);
     });
   }, []);
@@ -54,7 +56,7 @@ function App() {
       ) : !selectedGame ? (
         <PlayerGames user={user} setGame={setSelectedGame} />
       ) : (
-        <Game game={selectedGame} user={user} />
+        <Game game={selectedGame} user={user} setGame={setSelectedGame}/>
       )}
     </div>
   );
