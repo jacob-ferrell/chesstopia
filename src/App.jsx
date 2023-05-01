@@ -7,15 +7,14 @@ import getCurrentUser from "./api/getCurrentUser";
 import Game from "./components/Game";
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [selectedGame, setSelectedGame] = useState(null);
 
   useEffect(() => {
+    if (!localStorage.getItem("token")) return;
     getCurrentUser().then((res) => {
-      if (res.status !== 200) return setIsAuthenticated(false);
+      if (res.status !== 200) return;
       setUser(res.data);
-      setIsAuthenticated(true);
     });
   }, []);
 
@@ -24,7 +23,12 @@ function App() {
       email: "boomkablamo@gmail.com",
       password: "asdf",
     });
-    if (res.status === 200) setIsAuthenticated(true);
+    if (res.status !== 200) return;
+    getCurrentUser().then((res) => {
+      if (res.status !== 200) return;
+      console.log(res);
+      setUser(res.data);
+    });
   }
 
   async function loginAsCindy() {
@@ -32,22 +36,23 @@ function App() {
       email: "cindy@gmail.com",
       password: "asdf",
     });
-    if (res.status === 200) setIsAuthenticated(true);
+    if (res.status !== 200) return;
+    getCurrentUser().then((res) => {
+      if (res.status !== 200) return;
+      console.log(res);
+      setUser(res.data);
+    });
   }
 
   return (
     <div className="App">
-      {!isAuthenticated ? (
+      {!user ? (
         <>
           <button onClick={loginAsJacob}>Login As Jacob</button>
           <button onClick={loginAsCindy}>Login As Cindy</button>
         </>
       ) : !selectedGame ? (
-        <PlayerGames
-          game={selectedGame}
-          user={user}
-          setGame={setSelectedGame}
-        />
+        <PlayerGames user={user} setGame={setSelectedGame} />
       ) : (
         <Game game={selectedGame} user={user} />
       )}

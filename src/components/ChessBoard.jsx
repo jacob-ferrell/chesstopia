@@ -64,6 +64,7 @@ export default function ChessBoard({ game }) {
 
   async function handleClick(e, piece, y1, x1) {
     const color = e.currentTarget.dataset.color;
+    console.log(isEnemyPiece(color));
     if (isEnemyPiece(color) && !isPossibleMove(y1, x1)) return;
 
     if (isPossibleMove(y1, x1)) {
