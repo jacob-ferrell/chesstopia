@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ChessBoard from "./ChessBoard";
 import getGame from "../api/getGame";
-import Stomp from "stompjs";
+import { Client } from "@stomp/stompjs";
 
 export default function Game({ game, user, refreshGame, setGame }) {
   const [player, setPlayer] = useState(null);
@@ -16,6 +16,26 @@ export default function Game({ game, user, refreshGame, setGame }) {
     setPlayer({ ...curPlayer, color, isTurn, isInCheck });
   }, [game?.id, user.id, game?.currentTurn, game?.playerInCheck]);
 
+  useEffect(() => {
+    const stompClient = new Client({
+      brokerURL: `http://localhost:8080/websocket`,
+    });
+    stompClient.activate();
+
+    const subscription = stompClient.subscribe(
+      `/topic/game/${game?.id}`,
+      (message) => {
+        const receivedMessage = JSON.parse(message.body);
+        console.log("Received message:", receivedMessage);
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+      stompClient.deactivate();
+    };
+  }, []);
+
   async function refreshGame(e) {
     const res = await getGame(game?.id);
     setGame(res.data);
@@ -24,7 +44,12 @@ export default function Game({ game, user, refreshGame, setGame }) {
   return (
     <div>
       {game.winner ? (
-        <div>Check Mate! {game.winner.email === user.email ? " You Win!" : `${game.winner.name} Wins!`}</div>
+        <div>
+          Check Mate!{" "}
+          {game.winner.email === user.email
+            ? " You Win!"
+            : `${game.winner.name} Wins!`}
+        </div>
       ) : player?.isTurn ? (
         <div>It is your turn</div>
       ) : (
