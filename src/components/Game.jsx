@@ -2,9 +2,22 @@ import { useEffect, useState } from "react";
 import ChessBoard from "./ChessBoard";
 import getGame from "../api/getGame";
 import { Client } from "@stomp/stompjs";
+import { useWebSocket } from "react-use-websocket/dist/lib/use-websocket";
 
-export default function Game({ game, user, refreshGame, setGame }) {
+export default function Game({ game, user, setGame }) {
   const [player, setPlayer] = useState(null);
+  const [subscription, setSubscription] = useState(null);
+  /* const {
+    sendMessage,
+    sendJsonMessage,
+    lastMessage,
+    lastJsonMessage,
+    readyState,
+    getWebSocket,
+  } = useWebSocket('ws://localhost:8080/websocket', {
+    onOpen: () => console.log('opened'),
+    shouldReconnect: (closeEvent) => true,
+  }); */
 
   useEffect(() => {
     const { players, playerInCheck, currentTurn, whitePlayer } = game;
@@ -17,26 +30,31 @@ export default function Game({ game, user, refreshGame, setGame }) {
   }, [game?.id, user.id, game?.currentTurn, game?.playerInCheck]);
 
   useEffect(() => {
+    //if (!player || player.isTurn) return;
     const stompClient = new Client({
-      brokerURL: `http://localhost:8080/websocket`,
+      brokerURL: `ws://localhost:8080/websocket`,
+      onConnect: () => {
+        console.log("Connected");
+        const subscription = stompClient.subscribe(
+          `/topic/game/${game?.id}`,
+          (message) => {
+            const receivedMessage = JSON.parse(message.body);
+            console.log("Received message:", receivedMessage);
+            refreshGame();
+          }
+        );
+        setSubscription(subscription);
+      },
     });
     stompClient.activate();
 
-    const subscription = stompClient.subscribe(
-      `/topic/game/${game?.id}`,
-      (message) => {
-        const receivedMessage = JSON.parse(message.body);
-        console.log("Received message:", receivedMessage);
-      }
-    );
-
     return () => {
-      subscription.unsubscribe();
+      subscription?.unsubscribe();
       stompClient.deactivate();
     };
-  }, []);
+  }, [player?.isTurn]);
 
-  async function refreshGame(e) {
+  async function refreshGame() {
     const res = await getGame(game?.id);
     setGame(res.data);
   }
