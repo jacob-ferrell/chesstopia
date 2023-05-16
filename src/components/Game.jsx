@@ -30,7 +30,7 @@ export default function Game({ game, user, setGame }) {
   }, [game?.id, user.id, game?.currentTurn, game?.playerInCheck]);
 
   useEffect(() => {
-    //if (!player || player.isTurn) return;
+    if (!player || player.isTurn) return;
     const stompClient = new Client({
       brokerURL: `ws://localhost:8080/websocket`,
       onConnect: () => {

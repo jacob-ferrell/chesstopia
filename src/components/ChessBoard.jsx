@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import getPossibleMoves from "../api/getPossibleMoves";
 import postMove from "../api/postMove";
 import axios from "axios";
-import getCurrentUser from "../api/getCurrentUser.js";
+import getCurrentUser from "../api/getCurrentUser";
 
 export default function ChessBoard({ game, setGame, player}) {
   const [board, setBoard] = useState(null);

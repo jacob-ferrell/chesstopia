@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "./axios";
 import ChessBoard from "./components/ChessBoard";
 import PlayerGames from "./components/PlayerGames";
-import getCurrentUser from "./api/getCurrentUser.js";
+import getCurrentUser from "./api/getCurrentUser";
 import Game from "./components/Game";
 import getGame from "./api/getGame";
 
