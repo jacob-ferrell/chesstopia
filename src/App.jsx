@@ -7,6 +7,7 @@ import PlayerGames from "./components/PlayerGames";
 import getCurrentUser from "./api/getCurrentUser";
 import Game from "./components/Game";
 import getGame from "./api/getGame";
+import LoginPage from "./components/LoginPage";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -49,10 +50,7 @@ function App() {
   return (
     <div className="App">
       {!user ? (
-        <>
-          <button onClick={loginAsJacob}>Login As Jacob</button>
-          <button onClick={loginAsCindy}>Login As Cindy</button>
-        </>
+        <LoginPage setUser={setUser}/>
       ) : !selectedGame ? (
         <PlayerGames user={user} setGame={setSelectedGame} />
       ) : (

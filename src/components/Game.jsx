@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import ChessBoard from "./ChessBoard";
 import getGame from "../api/getGame";
 import { Client } from "@stomp/stompjs";
-import { useWebSocket } from "react-use-websocket/dist/lib/use-websocket";
 
 export default function Game({ game, user, setGame }) {
   const [player, setPlayer] = useState(null);
