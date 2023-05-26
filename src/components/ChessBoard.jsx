@@ -7,15 +7,19 @@ import postMove from "../api/postMove";
 import axios from "axios";
 import getCurrentUser from "../api/getCurrentUser";
 
-export default function ChessBoard({ game, setGame, player}) {
+export default function ChessBoard({ game, setGame, player }) {
   const [board, setBoard] = useState(null);
   const [selectedPiece, setSelectedPiece] = useState(null);
+  const [colors, setColors] = useState({
+    dark: "bg-yellow-900",
+    light: "bg-yellow-600",
+  });
   const isMirrored = player?.color === "BLACK";
   const letters = !isMirrored ? "ABCDEFGH" : "HGFEDCBA";
   const numbers = isMirrored ? "12345678" : "87654321";
   const isPlayerTurn = player?.isTurn;
 
-  const chessPieces = {
+  /*   const chessPieces = {
     KING: {
       BLACK: "\u265A",
       WHITE: "\u2654",
@@ -40,13 +44,22 @@ export default function ChessBoard({ game, setGame, player}) {
       BLACK: "\u265F",
       WHITE: "\u2659",
     },
+  }; */
+
+  const chessPieces = {
+    KING: "\u265A",
+    QUEEN: "\u265B",
+    ROOK: "\u265C",
+    BISHOP: "\u265D",
+    KNIGHT: "\u265E",
+    PAWN: "\u265F",
   };
 
   const mirroredStyle = {
     transform: `rotate(180deg)`,
   };
 
-  const isRedSpace = (y, x) => (y + x) % 2 !== 0;
+  const isDarkSpace = (y, x) => (y + x) % 2 !== 0;
 
   const isEnemyPiece = (color) => color !== player.color;
 
@@ -78,18 +91,19 @@ export default function ChessBoard({ game, setGame, player}) {
 
   async function makeMove(y1, x1) {
     const { x, y } = selectedPiece;
-    const res = await postMove(x, y, y1, x1);
+    const res = await postMove(game.id, x, y, y1, x1);
     setGame(res.data);
     return setSelectedPiece(null);
   }
 
   function handleMouseOver(e, y, x) {
-    const isRed = isRedSpace(y, x);
+    const isDark = isDarkSpace(y, x);
     const possibleMoves = selectedPiece?.possibleMoves;
     if (!possibleMoves?.length || !isPossibleMove(y, x)) {
       return;
     }
-    if (isRed) e.currentTarget.classList.toggle("bg-red-500");
+    if (isDark) e.currentTarget.classList.toggle(colors.dark);
+    else e.currentTarget.classList.toggle(colors.light);
     e.currentTarget.classList.add("bg-green-200");
     e.currentTarget.classList.add("cursor-pointer");
   }
@@ -97,8 +111,8 @@ export default function ChessBoard({ game, setGame, player}) {
   function handleMouseOut(e, y, x) {
     const space = e.currentTarget;
     space.classList.remove("bg-green-200");
-    if (isRedSpace(y, x) && !space.classList.contains("bg-red-500"))
-      space.classList.add("bg-red-500");
+    if (isDarkSpace(y, x)) space.classList.add(colors.dark);
+    else space.classList.add(colors.light);
     if (isPossibleMove(y, x)) space.classList.remove("cursor-pointer");
   }
 
@@ -113,7 +127,7 @@ export default function ChessBoard({ game, setGame, player}) {
     return true;
   }
 
-/*   useEffect(() => {
+  /*   useEffect(() => {
     const interval = setInterval(() => {
       axiosInstance
       .get(`game/${game.id}`)
@@ -121,7 +135,6 @@ export default function ChessBoard({ game, setGame, player}) {
       .catch((error) => console.error(error));
     }, 5000000000000);
   }, []); */
-
 
   useEffect(() => {
     if (game?.pieces) {
@@ -131,7 +144,7 @@ export default function ChessBoard({ game, setGame, player}) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="text-3xl flex justify-between pl-11 pr-4">
+      <div className="text-3xl flex justify-between pl-11 pr-4 text-gray-200">
         {letters.split("").map((c) => (
           <div key={c}>
             <span>{c}</span>
@@ -139,7 +152,7 @@ export default function ChessBoard({ game, setGame, player}) {
         ))}
       </div>
       <div className="flex gap-2">
-        <div className="text-3xl flex flex-col justify-between">
+        <div className="text-3xl flex flex-col justify-between text-gray-200">
           {numbers.split("").map((c) => (
             <div key={c}>
               <span>{c}</span>
@@ -160,9 +173,7 @@ export default function ChessBoard({ game, setGame, player}) {
                   piece?.color == player?.color
                     ? "cursor-pointer"
                     : "cursor-default";
-                const bgColor = !isRedSpace(r, c)
-                  ? "bg-gray-300"
-                  : "bg-red-500";
+                const bgColor = !isDarkSpace(r, c) ? colors.light : colors.dark;
                 return (
                   <div
                     key={r + c}
@@ -171,10 +182,22 @@ export default function ChessBoard({ game, setGame, player}) {
                     onMouseOut={(e) => handleMouseOut(e, r, c)}
                     style={isMirrored ? mirroredStyle : null}
                     data-color={piece?.color}
-                    onClick={(e) => isPlayerTurn ? handleClick(e, piece, r, c) : null }
+                    onClick={(e) =>
+                      isPlayerTurn ? handleClick(e, piece, r, c) : null
+                    }
                   >
-                    <span>
-                      {piece ? chessPieces[piece.type][piece.color] : ""}
+                    <span
+                      className={
+                        piece?.id === selectedPiece?.id
+                          ? "text-green-500"
+                          : piece?.color === "WHITE"
+                          ? "text-gray-200"
+                          : piece?.color === "BLACK"
+                          ? "text-zinc-900"
+                          : ""
+                      }
+                    >
+                      {piece ? chessPieces[piece.type] : ""}
                     </span>
                   </div>
                 );

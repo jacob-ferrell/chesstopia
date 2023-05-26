@@ -3,10 +3,12 @@ import LoginForm from "./LoginForm";
 import login from "../api/login";
 import axiosInstance from "../axios";
 import getCurrentUser from "../api/getCurrentUser";
+import { useNavigate } from "react-router";
 
 export default function LoginPage({ setUser }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     localStorage.removeItem("token");
@@ -46,6 +48,7 @@ export default function LoginPage({ setUser }) {
       if (res.status !== 200) return;
       console.log(res);
       setUser(res.data);
+      navigate("/");
     });
   }
 

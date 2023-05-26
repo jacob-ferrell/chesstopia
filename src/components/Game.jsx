@@ -26,7 +26,7 @@ export default function Game({ game, user, setGame }) {
     const isInCheck = playerInCheck === color;
     const isTurn = currentTurn?.email === user?.email;
     setPlayer({ ...curPlayer, color, isTurn, isInCheck });
-  }, [game?.id, user.id, game?.currentTurn, game?.playerInCheck]);
+  }, [game?.id, user?.id, game?.currentTurn, game?.playerInCheck]);
 
   useEffect(() => {
     if (!player || player.isTurn) return;
@@ -53,13 +53,8 @@ export default function Game({ game, user, setGame }) {
     };
   }, [player?.isTurn]);
 
-  async function refreshGame() {
-    const res = await getGame(game?.id);
-    setGame(res.data);
-  }
-
   return (
-    <div>
+    <div className="flex flex-col items-center gap-3 text-white text-2xl">
       {game.winner ? (
         <div>
           Check Mate!{" "}
@@ -77,7 +72,6 @@ export default function Game({ game, user, setGame }) {
 
       <ChessBoard game={game} user={user} setGame={setGame} player={player} />
 
-      <button onClick={refreshGame}>Refresh</button>
     </div>
   );
 }

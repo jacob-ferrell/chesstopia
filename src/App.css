@@ -1,8 +1,9 @@
 #root {
-  max-width: 1280px;
+  width: 100vw;
+  height: 100vh;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
+  margin-top: 88.31px;
 }
 
 .logo {
@@ -31,6 +32,28 @@
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
   }
+}
+
+.wood-light {
+  background-color: #8c6239;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 5px,
+    rgba(219, 199, 172, 0.5) 5px,
+    rgba(219, 199, 172, 0.5) 10px
+  );
+}
+
+.wood-dark {
+  background-color: #492603;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 5px,
+    rgba(226, 179, 117, 0.5) 5px,
+    rgba(226, 179, 117, 0.5) 10px
+  );
 }
 
 .card {
