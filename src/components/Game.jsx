@@ -6,7 +6,7 @@ import updateNotification from "../api/updateNotification";
 import { useQueryClient } from "@tanstack/react-query";
 import formatName from "../util/formatName";
 
-export default function Game({ game, user, setGame }) {
+export default function Game({ game, user, setGame, stompClient }) {
   const queryClient = useQueryClient();
   
   const [player, setPlayer] = useState(null);
@@ -25,25 +25,17 @@ export default function Game({ game, user, setGame }) {
   }, [game?.id, user?.id, game?.currentTurn, game?.playerInCheck]);
 
   useEffect(() => {
-    if (!player || player.isTurn) return;
-    const stompClient = new Client({
-      brokerURL: `ws://localhost:8080/websocket`,
-      onConnect: () => {
-        console.log("Connected");
-        const subscription = stompClient.subscribe(
-          `/topic/game/${game?.id}`,
-          (message) => handleMessage(message)
-        );
-        setSubscription(subscription);
-      },
-    });
-    stompClient.activate();
+    if (!player || !stompClient || player.isTurn) return;
+    const subscription = stompClient.subscribe(
+      `/topic/game/${game?.id}`,
+      (message) => handleMessage(message)
+    );
+    setSubscription(subscription);
 
     return () => {
       subscription?.unsubscribe();
-      stompClient.deactivate();
     };
-  }, [player?.isTurn]);
+  }, [player?.isTurn, stompClient]);
 
   async function refreshGame() {
     const res = await getGame(game?.id);

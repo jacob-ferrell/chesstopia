@@ -13,27 +13,28 @@ export default function Dashboard({ user, setGame, game }) {
     getNotifications(user?.id)
   );
   const [subscription, setSubscription] = useState(null);
+  const [stompClient, setStompClient] = useState(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!user) return;
-    const stompClient = new Client({
+    const client = new Client({
       brokerURL: `ws://localhost:8080/websocket`,
       onConnect: () => {
         console.log("Connected");
-        const subscription = stompClient.subscribe(
+        const subscription = client.subscribe(
           `/topic/user/${user?.id}`,
           (message) => handleMessage(message)
         );
         setSubscription(subscription);
       },
     });
-    stompClient.activate();
-
+    client.activate();
+    setStompClient(client);
     return () => {
       subscription?.unsubscribe();
-      stompClient.deactivate();
+      client.deactivate();
     };
   }, [user?.id])
 
@@ -55,7 +56,7 @@ export default function Dashboard({ user, setGame, game }) {
           <MyNotifications user={user}/>
         </div>
       ) : (game && user) ? (
-        <Game game={game} setGame={setGame} user={user} />
+        <Game stompClient={stompClient} game={game} setGame={setGame} user={user} />
       ) : null }
     </div>
   );
