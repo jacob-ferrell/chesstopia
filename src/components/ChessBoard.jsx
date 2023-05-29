@@ -104,13 +104,13 @@ export default function ChessBoard({ game, setGame, player }) {
     }
     if (isDark) e.currentTarget.classList.toggle(colors.dark);
     else e.currentTarget.classList.toggle(colors.light);
-    e.currentTarget.classList.add("bg-green-200");
+    e.currentTarget.classList.add("bg-green-500");
     e.currentTarget.classList.add("cursor-pointer");
   }
 
   function handleMouseOut(e, y, x) {
     const space = e.currentTarget;
-    space.classList.remove("bg-green-200");
+    space.classList.remove("bg-green-500");
     if (isDarkSpace(y, x)) space.classList.add(colors.dark);
     else space.classList.add(colors.light);
     if (isPossibleMove(y, x)) space.classList.remove("cursor-pointer");
@@ -160,7 +160,7 @@ export default function ChessBoard({ game, setGame, player }) {
           ))}
         </div>
         <div
-          className="border-t-2 border-r-2 border-black"
+          className={isMirrored ? "border-b-2 border-l-2 border-black" : "border-t-2 border-r-2 border-black"}
           style={isMirrored ? mirroredStyle : null}
         >
           {board?.map((row, r) => (
