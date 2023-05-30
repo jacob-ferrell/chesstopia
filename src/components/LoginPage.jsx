@@ -19,31 +19,19 @@ export default function LoginPage({}) {
     localStorage.removeItem("token");
   }, []);
 
-  /*   async function loginAsJacob() {
-    const res = await axiosInstance.post("auth/authenticate", {
-      email: "boomkablamo@gmail.com",
-      password: "asdf",
-    });
-    if (res.status !== 200) return;
-    getCurrentUser().then((res) => {
-      if (res.status !== 200) return;
-      console.log(res);
-      setUser(res.data);
-    });
+    async function loginAsJacob() {
+      const res = await login({ email: "boomkablamo@gmail.com", password: "asdf" });
+      if (res.status !== 200) return alert("Login Unsuccessful");
+      const { data } = await refetch();
+      navigate(`/user/${data.id}/dashboard`);
   }
 
-  async function loginAsCindy() {
-    const res = await axiosInstance.post("auth/authenticate", {
-      email: "cindy@gmail.com",
-      password: "asdf",
-    });
-    if (res.status !== 200) return;
-    getCurrentUser().then((res) => {
-      if (res.status !== 200) return;
-      console.log(res);
-      setUser(res.data);
-    });
-  } */
+  async function loginAsCindy(e) {
+    const res = await login({ email: "cindy@gmail.com", password: "asdf" });
+    if (res.status !== 200) return alert("Login Unsuccessful");
+    const { data } = await refetch();
+    navigate(`/user/${data.id}/dashboard`);
+  }
 
   async function loginUser(e) {
     e.preventDefault();
@@ -63,8 +51,8 @@ export default function LoginPage({}) {
         login={loginUser}
       />
       <button>Register</button>
-      {/* <button onClick={loginAsJacob}>Login As Jacob</button>
-      <button onClick={loginAsCindy}>Login As Cindy</button> */}
+      <button onClick={loginAsJacob}>Login As Jacob</button>
+      <button onClick={e => loginAsCindy(e)}>Login As Cindy</button>
     </div>
   );
 }
