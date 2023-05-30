@@ -2,10 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import getPlayerGames from "../api/getPlayerGames";
 import GameInfo from "./GameInfo";
+import getCurrentUser from "../api/getCurrentUser";
 
-export default function MyGames({ setGame, user }) {
-  const { data, isLoading } = useQuery(["games", user?.id], () =>
-    getPlayerGames(user?.id)
+export default function MyGames({ setGame }) {
+  const user = useQuery(["user"], getCurrentUser);
+
+  const { data, isLoading } = useQuery(
+    ["games"],
+    () => getPlayerGames(user.data.id),
+    { enabled: !user.isLoading && !!user.data }
   );
 
   const [expanded, setExpanded] = useState(true);
@@ -23,7 +28,7 @@ export default function MyGames({ setGame, user }) {
           ))}
         </div>
       ) : (
-        <div >{"My Games >"}</div>
+        <div>{"My Games >"}</div>
       )}
     </div>
   );

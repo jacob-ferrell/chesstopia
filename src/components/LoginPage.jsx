@@ -1,20 +1,19 @@
 import { useState, useEffect } from "react";
 import LoginForm from "./LoginForm";
 import login from "../api/login";
-import axiosInstance from "../axios";
-import getCurrentUser from "../api/getCurrentUser";
 import { useNavigate } from "react-router";
 
-export default function LoginPage({ setUser }) {
+export default function LoginPage({}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const navigate = useNavigate();
 
   useEffect(() => {
     localStorage.removeItem("token");
-  }, [])
+  }, []);
 
-  async function loginAsJacob() {
+  /*   async function loginAsJacob() {
     const res = await axiosInstance.post("auth/authenticate", {
       email: "boomkablamo@gmail.com",
       password: "asdf",
@@ -38,18 +37,13 @@ export default function LoginPage({ setUser }) {
       console.log(res);
       setUser(res.data);
     });
-  }
+  } */
 
   async function loginUser(e) {
     e.preventDefault();
     const res = await login({ email, password });
     if (res.status !== 200) return alert("Login Unsuccessful");
-    getCurrentUser().then((res) => {
-      if (res.status !== 200) return;
-      console.log(res);
-      setUser(res.data);
-      navigate("/");
-    });
+    navigate(`/user/${res.data.id}/dashboard`);
   }
 
   return (
@@ -62,8 +56,8 @@ export default function LoginPage({ setUser }) {
         login={loginUser}
       />
       <button>Register</button>
-      <button onClick={loginAsJacob}>Login As Jacob</button>
-      <button onClick={loginAsCindy}>Login As Cindy</button>
+      {/* <button onClick={loginAsJacob}>Login As Jacob</button>
+      <button onClick={loginAsCindy}>Login As Cindy</button> */}
     </div>
   );
 }

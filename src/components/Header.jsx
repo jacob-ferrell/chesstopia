@@ -1,10 +1,14 @@
 import getFirstChar from "../util/getFirstChar";
 import getNotifications from "../api/getNotifications";
 import { useQuery } from "@tanstack/react-query";
+import getCurrentUser from "../api/getCurrentUser";
 
-export default function Header({ user }) {
-  const { data, isLoading } = useQuery(["notifications", user?.id], () =>
-    getNotifications(user?.id)
+export default function Header({}) {
+  const user = useQuery(["user"], getCurrentUser, {enabled: false});
+  const { data, isLoading } = useQuery(
+    ["notifications"],
+    () => getNotifications(user?.id),
+    { enabled: !user.isLoading && !!user.data }
   );
 
   return (
@@ -12,8 +16,8 @@ export default function Header({ user }) {
       <div></div>
       <h1>Chesstopia</h1>
       <div className="flex gap-2">
-          <div>{user ? getFirstChar(user.email) : ""}</div>
-          <div>{data?.filter(n => !n.read).length}</div>
+        <div>{!!user.data ? getFirstChar(user.data.email) : ""}</div>
+        <div>{data?.filter((n) => !n.read).length}</div>
       </div>
     </header>
   );

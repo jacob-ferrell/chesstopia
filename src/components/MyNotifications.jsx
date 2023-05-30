@@ -1,9 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import getNotifications from "../api/getNotifications";
+import getCurrentUser from "../api/getCurrentUser";
 
-export default function MyNotifications({ user }) {
-  const { data, isLoading } = useQuery(["notifications", user?.id], () =>
-    getNotifications(user?.id)
+export default function MyNotifications({}) {
+  const user = useQuery(["user"], getCurrentUser);
+
+  const { data, isLoading } = useQuery(
+    ["notifications"],
+    () => getNotifications(user.data.id),
+    { enabled: !user.isLoading && !!user.data }
   );
 
   return (
@@ -12,7 +17,7 @@ export default function MyNotifications({ user }) {
       {isLoading
         ? null
         : data
-            .filter((n) => !n.read)
+            ?.filter((n) => !n.read)
             .map((n) => (
               <div
                 key={`n-${n.id}`}
