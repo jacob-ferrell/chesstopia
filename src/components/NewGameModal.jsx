@@ -1,34 +1,46 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import Modal from "./Modal";
-import getFriends from "../api/getFriends";
-import getCurrentUser from "../api/getCurrentUser";
+import useFriends from "../hooks/useFriends";
+import useCreateGame from "../hooks/useCreateGame";
 
-export default function NewGameModal({ title, closeModal, isOpen }) {
-    const user = useQuery(["user"], getCurrentUser);
-    const { data, isLoading } = useQuery(
-      ["friends"],
-      () => getFriends(user?.id),
-      { enabled: !user.isLoading && !!user.data }
-    );
+export default function NewGameModal({ closeModal, isOpen }) {
+  const { friends, isLoading } = useFriends();
+  const queryClient = useQueryClient();
+  const createGame = useCreateGame();
+
+  async function handleClick(e) {
+    e.preventDefault();
+    await createGame(e.target.dataset.id);
+    closeModal();
     
-    async function handleClick(e) {
-        try {
+  }
 
-        } catch(error) {
-
-        }
+  function renderFriends() {
+    if (isLoading) {
+      return <p>Loading...</p>;
     }
+
+    if (!friends || friends.length === 0) {
+      return <p>No friends found.</p>;
+    }
+
     return (
-    <Modal
-      title={"Start New Game"}
-      closeModal={closeModal}
-      isOpen={isOpen}
-    >
-        <p>Select a friend to begin a new game</p>
-        <ul>
-        {!isLoading ? data?.map(f => <li><a href="">{f.email}</a></li>) : null}
-        </ul>
-        
+      <ul>
+        {friends.map((f) => (
+          <li key={`ng-f-${f.id}`}>
+            <a onClick={handleClick} href="" data-id={f.id}>
+              {f.email}
+            </a>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  return (
+    <Modal title={"Start New Game"} closeModal={closeModal} isOpen={isOpen}>
+      <p>Select a friend to begin a new game</p>
+      {renderFriends()}
     </Modal>
   );
 }

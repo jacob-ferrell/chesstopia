@@ -4,37 +4,36 @@ import getGame from "../api/getGame";
 import updateNotification from "../api/updateNotification";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import formatName from "../util/formatName";
-import getCurrentUser from "../api/getCurrentUser";
+import useCurrentUser from "../hooks/useCurrentUser";
 
-export default function Game({ game, gameId, setGame, stompClient }) {
+export default function Game({ game, setGame, gameId, stompClient }) {
   const queryClient = useQueryClient();
-  const user = useQuery(["user"], getCurrentUser);
+  const { user, isLoading } = useCurrentUser();
 
   const [player, setPlayer] = useState(null);
   const [opponent, setOpponent] = useState(null);
   const [subscription, setSubscription] = useState(null);
 
   useEffect(() => {
-    if (user.isLoading || !user.data) return;
+    if (isLoading) return;
     if (!game) {
       handleRefresh();
       return;
     }
-    const { players, playerInCheck, currentTurn, whitePlayer } = game;
-    const { email } = user.data;
+    const { blackPlayer, playerInCheck, currentTurn, whitePlayer } = game;
+    const players = [whitePlayer, blackPlayer];
+    const { email } = user;
     const color = whitePlayer.email === email ? "WHITE" : "BLACK";
     const curPlayer = players.find((p) => p.email === email);
     setOpponent(players.find((p) => p.email !== email));
     const isInCheck = playerInCheck === color;
-    const isTurn = currentTurn?.email === user.data.email;
+    const isTurn = currentTurn?.email === user.email;
     setPlayer({ ...curPlayer, color, isTurn, isInCheck });
   }, [
     game?.id,
-    user.isLoading,
+    isLoading,
     game?.currentTurn,
     game?.playerInCheck,
-    gameId,
-    game,
   ]);
 
   useEffect(() => {
@@ -98,7 +97,7 @@ export default function Game({ game, gameId, setGame, stompClient }) {
       {game?.winner ? (
         <div>
           Check Mate!{" "}
-          {game?.winner.email === user.data.email
+          {game?.winner.email === user.email
             ? " You Win!"
             : `${game?.winner.name} Wins!`}
         </div>

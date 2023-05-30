@@ -5,15 +5,11 @@ import GameInfo from "./GameInfo";
 import getCurrentUser from "../api/getCurrentUser";
 import Modal from "./Modal";
 import NewGameModal from "./NewGameModal";
+import useGames from "../hooks/useGames";
 
 export default function MyGames({ setGame }) {
-  const user = useQuery(["user"], getCurrentUser);
 
-  const { data, isLoading } = useQuery(
-    ["games"],
-    () => getPlayerGames(user.data.id),
-    { enabled: !user.isLoading && !!user.data }
-  );
+  const { games, isLoading } = useGames();
 
   const [expanded, setExpanded] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -40,8 +36,8 @@ export default function MyGames({ setGame }) {
           </tr>
         </thead>
         <tbody>
-          {data?.map((game, i) => (
-            <GameInfo setGame={setGame} game={game} user={user} key={"g" + i} />
+          {games?.map((game, i) => (
+            <GameInfo setGame={setGame} game={game} key={"g" + i} />
           ))}
         </tbody>
       </table>

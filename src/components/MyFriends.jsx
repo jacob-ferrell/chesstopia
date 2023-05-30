@@ -4,20 +4,41 @@ import getFriends from "../api/getFriends";
 import AddFriendForm from "./AddFriendForm";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import useFriends from "../hooks/useFriends";
 
-export default function MyFriends({}) {
-  const user = useQuery(["user"], getCurrentUser);
-  const { data, isLoading } = useQuery(
-    ["friends"],
-    () => getFriends(user?.id),
-    { enabled: !user.isLoading && !!user.data }
-  );
+export default function MyFriends() {
+
+
+  const { friends, isLoading } = useFriends();
+
   const [showForm, setShowForm] = useState(false);
 
   async function handleChallengeClick(e) {
     e.preventDefault();
-    const res = await createGame(user.id, e.target.dataset.id);
-    if (res.status !== 201) alert("Error creating game");
+    try {
+      await createGame(e.target.dataset.id);
+    } catch (error) {
+      alert("Error creating game: " + error);
+    }
+  }
+
+  function renderFriends() {
+    if (isLoading) {
+      return <p>Loading...</p>;
+    }
+
+    if (!friends || friends.length === 0) {
+      return <p>No friends found.</p>;
+    }
+
+    return friends.map((f) => (
+      <div key={`f-${f.id}`}>
+        {f.email}{" "}
+        <a onClick={handleChallengeClick} href="" data-id={f.id}>
+          Challenge
+        </a>
+      </div>
+    ));
   }
 
   return (
@@ -29,16 +50,7 @@ export default function MyFriends({}) {
         </button>
       )}
       {showForm && <AddFriendForm hide={() => setShowForm(false)} />}
-      {!isLoading && !showForm
-        ? data?.map((f) => (
-            <div key={`f-${f.id}`}>
-              {f.email}{" "}
-              <a onClick={handleChallengeClick} href="" data-id={f.id}>
-                Challenge
-              </a>
-            </div>
-          ))
-        : null}
+      {renderFriends()}
     </div>
   );
 }

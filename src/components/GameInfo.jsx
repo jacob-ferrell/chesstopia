@@ -3,17 +3,19 @@ import { useState, useEffect } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import getCurrentUser from "../api/getCurrentUser";
+import useCurrentUser from "../hooks/useCurrentUser";
 
 export default function GameInfo({ game, setGame }) {
   const [opponent, setOpponent] = useState(null);
 
-  const user = useQuery(["user"], getCurrentUser);
+  const { user, isLoading } = useCurrentUser();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   useEffect(() => {
-    setOpponent(game.players.find((p) => p.id !== user.data.id));
-  }, [game?.id, user.isLoading, user.data]);
+    const { whitePlayer, blackPlayer } = game;
+    setOpponent([whitePlayer, blackPlayer].find((p) => p.id !== user.id));
+  }, [game?.id, isLoading, user]);
 
   async function handleClick(e) {
     e.preventDefault();
@@ -28,9 +30,9 @@ export default function GameInfo({ game, setGame }) {
   return (
     <tr>
       <td className="px-3">
-          <a href="" className="text-purple-400 font-bold" onClick={handleClick}>
-            {opponent?.email}
-          </a>
+        <a href="" className="text-purple-400 font-bold" onClick={handleClick}>
+          {opponent?.email}
+        </a>
       </td>
       <td className="px-3">Date</td>
       <td className="px-3"></td>
