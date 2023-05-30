@@ -26,10 +26,14 @@ export default function GameInfo({ game, setGame }) {
   }
 
   return (
-    <div>
-      <a href="" onClick={handleClick}>
-        {opponent?.email}
-      </a>
-    </div>
+    <tr>
+      <td className="px-3">
+          <a href="" className="text-purple-400 font-bold" onClick={handleClick}>
+            {opponent?.email}
+          </a>
+      </td>
+      <td className="px-3">Date</td>
+      <td className="px-3"></td>
+    </tr>
   );
 }
