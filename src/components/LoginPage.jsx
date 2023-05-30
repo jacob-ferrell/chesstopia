@@ -19,26 +19,38 @@ export default function LoginPage({}) {
     localStorage.removeItem("token");
   }, []);
 
-    async function loginAsJacob() {
-      const res = await login({ email: "boomkablamo@gmail.com", password: "asdf" });
-      if (res.status !== 200) return alert("Login Unsuccessful");
+  async function loginAsJacob() {
+    try {
+      const res = await login({
+        email: "boomkablamo@gmail.com",
+        password: "asdf",
+      });
       const { data } = await refetch();
       navigate(`/user/${data.id}/dashboard`);
+    } catch (error) {
+      alert("Unsuccessful login. Error: " + error);
+    }
   }
 
   async function loginAsCindy(e) {
-    const res = await login({ email: "cindy@gmail.com", password: "asdf" });
-    if (res.status !== 200) return alert("Login Unsuccessful");
-    const { data } = await refetch();
-    navigate(`/user/${data.id}/dashboard`);
+    try {
+      const res = await login({ email: "cindy@gmail.com", password: "asdf" });
+      const { data } = await refetch();
+      navigate(`/user/${data.id}/dashboard`);
+    } catch (error) {
+      alert("Unsuccessful login. Error: " + error);
+    }
   }
 
   async function loginUser(e) {
     e.preventDefault();
-    const res = await login({ email, password });
-    if (res.status !== 200) return alert("Login Unsuccessful");
-    const { data } = await refetch();
-    navigate(`/user/${data.id}/dashboard`);
+    try {
+      const res = await login({ email, password });
+      const { data } = await refetch();
+      navigate(`/user/${data.id}/dashboard`);
+    } catch (error) {
+      alert("Unsuccessful login. Error: " + error);
+    }
   }
 
   return (
@@ -52,7 +64,7 @@ export default function LoginPage({}) {
       />
       <button>Register</button>
       <button onClick={loginAsJacob}>Login As Jacob</button>
-      <button onClick={e => loginAsCindy(e)}>Login As Cindy</button>
+      <button onClick={(e) => loginAsCindy(e)}>Login As Cindy</button>
     </div>
   );
 }
