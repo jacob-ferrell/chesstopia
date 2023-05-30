@@ -50,7 +50,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route
-          path="/user/:userId/dashboard"
+          path="/dashboard"
           element={<Dashboard setGame={setSelectedGame} game={selectedGame} />}
         />
         <Route
