@@ -2,10 +2,16 @@ import { useState, useEffect } from "react";
 import LoginForm from "./LoginForm";
 import login from "../api/login";
 import { useNavigate } from "react-router";
+import { useQuery } from "@tanstack/react-query";
+import getCurrentUser from "../api/getCurrentUser";
 
 export default function LoginPage({}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const { data, refetch } = useQuery(["user"], getCurrentUser, {
+    enabled: false,
+  });
 
   const navigate = useNavigate();
 
@@ -43,7 +49,8 @@ export default function LoginPage({}) {
     e.preventDefault();
     const res = await login({ email, password });
     if (res.status !== 200) return alert("Login Unsuccessful");
-    navigate(`/user/${res.data.id}/dashboard`);
+    const { data } = await refetch();
+    navigate(`/user/${data.id}/dashboard`);
   }
 
   return (

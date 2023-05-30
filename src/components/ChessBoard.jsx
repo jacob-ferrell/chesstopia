@@ -1,11 +1,6 @@
 import { useState, useEffect } from "react";
-import axiosInstance from "../axios";
-import getPlayerGames from "../api/getPlayerGames";
-import { useQuery } from "@tanstack/react-query";
 import getPossibleMoves from "../api/getPossibleMoves";
 import postMove from "../api/postMove";
-import axios from "axios";
-import getCurrentUser from "../api/getCurrentUser";
 
 export default function ChessBoard({ game, setGame, player }) {
   const [board, setBoard] = useState(null);
@@ -18,33 +13,6 @@ export default function ChessBoard({ game, setGame, player }) {
   const letters = !isMirrored ? "ABCDEFGH" : "HGFEDCBA";
   const numbers = isMirrored ? "12345678" : "87654321";
   const isPlayerTurn = player?.isTurn;
-
-  /*   const chessPieces = {
-    KING: {
-      BLACK: "\u265A",
-      WHITE: "\u2654",
-    },
-    QUEEN: {
-      BLACK: "\u265B",
-      WHITE: "\u2655",
-    },
-    ROOK: {
-      BLACK: "\u265C",
-      WHITE: "\u2656",
-    },
-    BISHOP: {
-      BLACK: "\u265D",
-      WHITE: "\u2657",
-    },
-    KNIGHT: {
-      BLACK: "\u265E",
-      WHITE: "\u2658",
-    },
-    PAWN: {
-      BLACK: "\u265F",
-      WHITE: "\u2659",
-    },
-  }; */
 
   const chessPieces = {
     KING: "\u265A",
@@ -126,15 +94,6 @@ export default function ChessBoard({ game, setGame, player }) {
     }
     return true;
   }
-
-  /*   useEffect(() => {
-    const interval = setInterval(() => {
-      axiosInstance
-      .get(`game/${game.id}`)
-      .then((data) => setGameData(data.data))
-      .catch((error) => console.error(error));
-    }, 5000000000000);
-  }, []); */
 
   useEffect(() => {
     if (game?.pieces) {
