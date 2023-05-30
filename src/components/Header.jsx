@@ -15,7 +15,7 @@ export default function Header({}) {
       <div></div>
       <h1>Chesstopia</h1>
       <div className="flex gap-2">
-        <div>{!userIsLoading ? getFirstChar(user.email) : ""}</div>
+        <div>{!userIsLoading && user ? getFirstChar(user.email) : ""}</div>
         <div>{!isLoading && notifications?.filter((n) => !n.read).length}</div>
       </div>
     </header>
