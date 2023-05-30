@@ -9,11 +9,15 @@ export default function AddFriendForm({ hide }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const res = await addFriend(email);
-    if (res.status !== 200) return alert("Error while adding friend");
-    queryClient.invalidateQueries("friends");
-    setEmail("");
-    hide();
+    try {
+      const res = await addFriend(email);
+      queryClient.invalidateQueries("friends");
+      setEmail("");
+      hide();
+    } catch(error) {
+      alert("Error while adding " + email + ": " + error);
+    }
+    
   }
 
   return (
