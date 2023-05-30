@@ -1,7 +1,6 @@
 import axiosInstance from "../axios";
 
-export default async function getNotifications(userId) {
-    if (userId === undefined) return null;
-    const res = await axiosInstance.get(`/notifications/user/${userId}`);
+export default async function getNotifications() {
+    const res = await axiosInstance.get(`notifications`);
     if (res.status === 200) return res.data;
 }
