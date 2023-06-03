@@ -1,17 +1,13 @@
 import createGame from "../api/createGame";
-import getCurrentUser from "../api/getCurrentUser";
-import getFriends from "../api/getFriends";
 import AddFriendForm from "./AddFriendForm";
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import useFriends from "../hooks/useFriends";
+import AddFriendModal from "./modals/AddFriendModal";
 
 export default function MyFriends() {
-
-
   const { friends, isLoading } = useFriends();
 
-  const [showForm, setShowForm] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   async function handleChallengeClick(e) {
     e.preventDefault();
@@ -42,13 +38,20 @@ export default function MyFriends() {
   }
 
   return (
-    <div className="border-solid border-2 border-black rounded-md p-2 bg-gray-500 text-white">
-      <h1 className="text-">My Friends</h1>
-      {!showForm && (
-        <button className="bg-purple-500" onClick={() => setShowForm(true)}>
-          Add Friend
+    <div className="border-solid border-2 border-black rounded-md p-4 bg-gray-500 text-white">
+      <div className="flex gap-3 justify-center items-center">
+        <h1 className="text-4xl">My Friends</h1>
+        <button
+          className="bg-purple-500 w-12 h-12 rounded-full"
+          onClick={() => setShowModal(true)}
+        >
+          <span className="text-white text-2xl font-bold">+</span>
         </button>
-      )}
+      </div>
+      <AddFriendModal
+        closeModal={() => setShowModal(false)}
+        isOpen={showModal}
+      />
       {showForm && <AddFriendForm hide={() => setShowForm(false)} />}
       {renderFriends()}
     </div>
