@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import Modal from "./Modal";
-import useFriends from "../hooks/useFriends";
-import useCreateGame from "../hooks/useCreateGame";
+import useFriends from "../../hooks/useFriends";
+import useCreateGame from "../../hooks/useCreateGame";
 
 export default function NewGameModal({ closeModal, isOpen }) {
   const { friends, isLoading } = useFriends();
