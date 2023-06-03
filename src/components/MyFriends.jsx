@@ -52,7 +52,6 @@ export default function MyFriends() {
         closeModal={() => setShowModal(false)}
         isOpen={showModal}
       />
-      {showForm && <AddFriendForm hide={() => setShowForm(false)} />}
       {renderFriends()}
     </div>
   );

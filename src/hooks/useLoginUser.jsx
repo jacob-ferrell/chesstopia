@@ -1,7 +1,6 @@
 import { useState } from "react";
 import login from "../api/login";
 import { useNavigate } from "react-router";
-import getCurrentUser from "../api/getCurrentUser";
 import useCurrentUser from "./useCurrentUser";
 
 export function useLoginUser() {
