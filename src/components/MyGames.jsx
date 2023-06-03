@@ -1,11 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import getPlayerGames from "../api/getPlayerGames";
 import GameInfo from "./GameInfo";
-import getCurrentUser from "../api/getCurrentUser";
-import Modal from "./Modal";
-import NewGameModal from "./NewGameModal";
 import useGames from "../hooks/useGames";
+import NewGameModal from "./modals/NewGameModal";
 
 export default function MyGames({ setGame }) {
 
