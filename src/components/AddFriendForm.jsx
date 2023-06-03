@@ -2,7 +2,7 @@ import { useState } from "react";
 import addFriend from "../api/addFriend";
 import { useQueryClient } from "@tanstack/react-query";
 
-export default function AddFriendForm({ hide }) {
+export default function AddFriendForm({ close }) {
   const [email, setEmail] = useState("");
 
   const queryClient = useQueryClient();
@@ -13,7 +13,7 @@ export default function AddFriendForm({ hide }) {
       const res = await addFriend(email);
       queryClient.invalidateQueries("friends");
       setEmail("");
-      hide();
+      close();
     } catch(error) {
       alert("Error while adding " + email + ": " + error);
     }
