@@ -50,7 +50,11 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route
-          path="/dashboard"
+          path={"/"}
+          element={<Dashboard setGame={setSelectedGame} game={selectedGame} />}
+        />
+        <Route
+          path={"/dashboard"}
           element={<Dashboard setGame={setSelectedGame} game={selectedGame} />}
         />
         <Route
