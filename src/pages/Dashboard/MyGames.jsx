@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import GameInfo from "./GameInfo";
-import useGames from "../hooks/useGames";
-import NewGameModal from "./modals/NewGameModal";
+import useGames from "../../hooks/useGames";
+import NewGameModal from "../../components/modals/NewGameModal";
 
 export default function MyGames({ setGame }) {
 

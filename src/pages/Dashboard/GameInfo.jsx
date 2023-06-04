@@ -1,9 +1,8 @@
-import getGame from "../api/getGame";
+import getGame from "../../api/getGame";
 import { useState, useEffect } from "react";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import getCurrentUser from "../api/getCurrentUser";
-import useCurrentUser from "../hooks/useCurrentUser";
+import useCurrentUser from "../../hooks/useCurrentUser";
 
 export default function GameInfo({ game, setGame }) {
   const [opponent, setOpponent] = useState(null);

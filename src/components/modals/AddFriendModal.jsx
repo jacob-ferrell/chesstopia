@@ -1,4 +1,4 @@
-import AddFriendForm from "../AddFriendForm";
+import AddFriendForm from "../../pages/Dashboard/AddFriendForm";
 import Modal from "./Modal";
 
 export default function AddFriendModal({isOpen, closeModal}) {

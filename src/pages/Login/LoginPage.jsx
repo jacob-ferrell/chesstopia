@@ -1,5 +1,5 @@
 import LoginForm from "./LoginForm";
-import { useLoginUser } from "../hooks/useLoginUser";
+import { useLoginUser } from "../../hooks/useLoginUser";
 import { useEffect } from "react";
 
 export default function LoginPage() {

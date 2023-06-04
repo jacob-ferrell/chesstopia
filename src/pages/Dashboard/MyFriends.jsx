@@ -1,21 +1,19 @@
-import createGame from "../api/createGame";
-import AddFriendForm from "./AddFriendForm";
+import useCreateGame from "../../hooks/useCreateGame";
 import { useState } from "react";
-import useFriends from "../hooks/useFriends";
-import AddFriendModal from "./modals/AddFriendModal";
+import useFriends from "../../hooks/useFriends";
+import AddFriendModal from "../../components/modals/AddFriendModal";
 
 export default function MyFriends() {
   const { friends, isLoading } = useFriends();
+
+  const createGame = useCreateGame();
 
   const [showModal, setShowModal] = useState(false);
 
   async function handleChallengeClick(e) {
     e.preventDefault();
-    try {
-      await createGame(e.target.dataset.id);
-    } catch (error) {
-      alert("Error creating game: " + error);
-    }
+    await createGame(e.target.dataset.id);
+
   }
 
   function renderFriends() {

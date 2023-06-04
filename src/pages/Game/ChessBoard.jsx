@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import getPossibleMoves from "../api/getPossibleMoves";
-import postMove from "../api/postMove";
+import getPossibleMoves from "../../api/getPossibleMoves";
+import postMove from "../../api/postMove";
 
 export default function ChessBoard({ game, setGame, player }) {
   const [board, setBoard] = useState(null);

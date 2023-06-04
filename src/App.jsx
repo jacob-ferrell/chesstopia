@@ -1,10 +1,10 @@
 import "./App.css";
 import { useState, useEffect } from "react";
-import Game from "./components/Game";
+import Game from "./pages/Game/Game";
 import { Client } from "@stomp/stompjs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import LoginPage from "./components/LoginPage";
-import Dashboard from "./components/Dashboard";
+import LoginPage from "./pages/Login/LoginPage";
+import Dashboard from "./pages/Dashboard/Dashboard"
 import { Routes, Route, useNavigate, useParams } from "react-router";
 import Header from "./components/Header";
 import useCurrentUser from "./hooks/useCurrentUser";

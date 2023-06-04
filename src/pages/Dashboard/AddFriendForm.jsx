@@ -1,5 +1,5 @@
 import { useState } from "react";
-import addFriend from "../api/addFriend";
+import addFriend from "../../api/addFriend";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function AddFriendForm({ close }) {

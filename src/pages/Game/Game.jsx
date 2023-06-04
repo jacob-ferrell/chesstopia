@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import ChessBoard from "./ChessBoard";
-import getGame from "../api/getGame";
-import updateNotification from "../api/updateNotification";
+import getGame from "../../api/getGame";
+import updateNotification from "../../api/updateNotification";
 import { useQueryClient } from "@tanstack/react-query";
-import formatName from "../util/formatName";
-import useCurrentUser from "../hooks/useCurrentUser";
+import formatName from "../../util/formatName";
+import useCurrentUser from "../../hooks/useCurrentUser";
 
 export default function Game({ game, setGame, gameId, stompClient }) {
   const queryClient = useQueryClient();

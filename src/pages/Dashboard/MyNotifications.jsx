@@ -1,5 +1,5 @@
 
-import useNotifications from "../hooks/useNotifications";
+import useNotifications from "../../hooks/useNotifications";
 
 export default function MyNotifications({}) {
 
