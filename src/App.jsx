@@ -2,6 +2,7 @@ import "./App.css";
 import { useState, useEffect } from "react";
 import Game from "./components/Game";
 import { Client } from "@stomp/stompjs";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import LoginPage from "./components/LoginPage";
 import Dashboard from "./components/Dashboard";
 import { Routes, Route, useNavigate, useParams } from "react-router";
@@ -13,6 +14,7 @@ function App() {
   const [subscription, setSubscription] = useState(null);
   const [stompClient, setStompClient] = useState(null);
 
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { gameId, userId } = useParams();
   const { user, isLoading } = useCurrentUser();
@@ -31,7 +33,7 @@ function App() {
         console.log("Connected");
         const subscription = client.subscribe(
           `/topic/user/${user?.id}`,
-          (message) => handleMessage(message)
+          (message) => queryClient.invalidateQueries("notifications")
         );
         setSubscription(subscription);
       },
