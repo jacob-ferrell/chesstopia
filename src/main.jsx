@@ -12,11 +12,9 @@ const clientId = "27F4sjcVpWzVsviGDpdjk13Z5rmdywV7";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
-    <React.StrictMode>
       <QueryClientProvider client={queryClient}>
         <App />
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
-    </React.StrictMode>
   </BrowserRouter>
 );
