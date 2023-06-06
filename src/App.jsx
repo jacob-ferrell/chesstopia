@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard/Dashboard"
 import { Routes, Route, useNavigate, useParams } from "react-router";
 import Header from "./components/Header";
 import useCurrentUser from "./hooks/useCurrentUser";
+import Lobby from "./pages/Lobby/Lobby";
 
 function App() {
   const [selectedGame, setSelectedGame] = useState(null);
@@ -51,6 +52,7 @@ function App() {
       <Header />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/lobby" element={<Lobby stompClient={stompClient}/>} />
         <Route
           path={"/"}
           element={<Dashboard setGame={setSelectedGame} game={selectedGame} />}
