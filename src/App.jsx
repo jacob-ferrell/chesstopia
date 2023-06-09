@@ -34,7 +34,7 @@ function App() {
         console.log("Connected");
         const subscription = client.subscribe(
           `/topic/user/${user?.id}`,
-          (message) => queryClient.invalidateQueries("notifications")
+          (message) => queryClient.invalidateQueries()
         );
         setSubscription(subscription);
       },
@@ -48,7 +48,7 @@ function App() {
   }, [user?.id]);
 
   return (
-    <div className="App w-full h-full bg-gray-700">
+    <div className="App w-full pt-[80px] h-full bg-gradient-to-t from-gray-700 to-gray-900">
       <Header />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
