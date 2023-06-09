@@ -1,7 +1,7 @@
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import addFriend from "../api/addFriend";
 
-export default function useAddFriend({}) {
+export default function useAddFriend() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation((friendEmail) => addFriend(friendEmail), {
@@ -14,7 +14,7 @@ export default function useAddFriend({}) {
     try {
       await mutation.mutateAsync(friendEmail);
     } catch (error) {
-      alert("Error creating game: " + error);
+      console.log(`Error adding ${friendEmail}: ${error}`);
     }
   };
 
