@@ -28,7 +28,6 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => {
     const { data } = response;
-    console.log(response)
     if (!data?.token) return response;
     localStorage.setItem("token", data.token);
     axiosInstance.defaults.headers.common[
@@ -37,6 +36,10 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
+    if (error.response && error.response.data) {
+      alert(error.response.data.message); 
+    }
+
     return Promise.reject(error);
   }
 );
