@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import formatName from "../../util/formatName";
 import useCurrentUser from "../../hooks/useCurrentUser";
 import { useNavigate } from "react-router-dom";
+import BackToDashboardButton from "../../components/buttons/BackToDashboardButton";
 
 export default function Game({ stompClient }) {
   const queryClient = useQueryClient();
@@ -18,8 +19,6 @@ export default function Game({ stompClient }) {
   const [opponentIsConnected, setOpponentIsConnected] = useState(false);
   const [connectedTimeout, setConnectedTimeout] = useState(null);
   const [subscription, setSubscription] = useState(null);
-
-
 
   useEffect(() => {
     if (isLoading) return;
@@ -57,7 +56,7 @@ export default function Game({ stompClient }) {
   }
 
   async function setGameFromURL() {
-    console.log('refreshing')
+    console.log("refreshing");
     let id;
     const url = window.location.href;
     if (url.at(-1) === "/") {
@@ -67,9 +66,13 @@ export default function Game({ stompClient }) {
     } else {
       id = url.slice(url.lastIndexOf("/") + 1);
     }
-    const res = await getGame(id);
-    console.log(res.data)
-    setGame(res.data);
+    try {
+      const res = await getGame(id);
+      console.log(res.data);
+      setGame(res.data);
+    } catch (error) {
+      navigate("/");
+    }
   }
 
   async function handleMessage(message) {
@@ -90,30 +93,32 @@ export default function Game({ stompClient }) {
 
   return (
     <>
-      <div className={``}>{`${opponent?.email}: ${
-        opponentIsConnected ? "Active" : "Inactive"
-      }`}</div>
-      <div className="flex flex-col items-center gap-3 text-white text-2xl">
-        {game?.winner ? (
-          <div>
-            Check Mate!{" "}
-            {game?.winner.email === user.email
-              ? " You Win!"
-              : `${game?.winner.name} Wins!`}
+      {game ? (
+        <>
+          <div className={``}>{`${opponent?.email}: ${
+            opponentIsConnected ? "Active" : "Inactive"
+          }`}</div>
+          <div className="flex flex-col items-center gap-3 text-white text-2xl">
+            {game?.winner ? (
+              <div>
+                Check Mate!{" "}
+                {game?.winner.email === user.email
+                  ? " You Win!"
+                  : `${game?.winner.name} Wins!`}
+              </div>
+            ) : player?.isTurn ? (
+              <div>It is your turn</div>
+            ) : (
+              <div>{`Awaiting ${
+                opponent?.name ? formatName(opponent.name) : "opponent's"
+              } move`}</div>
+            )}
+            {player?.isInCheck ? <div>You are in check!</div> : null}
+            <ChessBoard game={game} setGame={setGame} player={player} />
+            <BackToDashboardButton />
           </div>
-        ) : player?.isTurn ? (
-          <div>It is your turn</div>
-        ) : (
-          <div>{`Awaiting ${
-            opponent?.name ? formatName(opponent.name) : "opponent's"
-          } move`}</div>
-        )}
-        {player?.isInCheck ? <div>You are in check!</div> : null}
-        <ChessBoard game={game} setGame={setGame} player={player} />
-        <button className="flex items-center justify-center gap-1 bg-gray-700 font-bold text-sm rounded p-2 shadow hover:bg-gray-600" onClick={() => navigate("/")}>
-          <span className="text-[1.3rem]">⬅</span>{" Back To Dashboard"}
-        </button>
-      </div>
+        </>
+      ) : null}
     </>
   );
 }
