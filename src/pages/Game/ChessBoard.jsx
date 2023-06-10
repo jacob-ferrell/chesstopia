@@ -103,7 +103,7 @@ export default function ChessBoard({ game, setGame, player }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="text-3xl flex justify-between pl-11 pr-4 text-gray-200">
+      <div className="text-xl  sm:text-2xl flex justify-between pl-9 pr-4 text-gray-200">
         {letters.split("").map((c) => (
           <div key={c}>
             <span>{c}</span>
@@ -111,19 +111,20 @@ export default function ChessBoard({ game, setGame, player }) {
         ))}
       </div>
       <div className="flex gap-2">
-        <div className="text-3xl flex flex-col justify-between text-gray-200">
+        <div className="text-xl sm:text-2xl flex flex-col justify-between text-gray-200">
           {numbers.split("").map((c) => (
             <div key={c}>
               <span>{c}</span>
             </div>
           ))}
         </div>
+        {/* Chessboard */}
         <div
-          className={isMirrored ? "border-b-2 border-l-2 border-black" : "border-t-2 border-r-2 border-black"}
-          style={isMirrored ? mirroredStyle : null}
+          className={isMirrored ? "shadow border-b-2 border-l-2 border-black transform rotate-180" : "shadow border-t-2 border-r-2 border-black"}
+          style={{ width: "100%", maxWidth: "100vw", overflowX: "auto" }}
         >
           {board?.map((row, r) => (
-            <div key={r} className="flex h-12">
+            <div key={r} className="flex h-10 sm:h-12">
               {row?.map((col, c) => {
                 const piece = col;
                 const greenColor =
@@ -136,7 +137,7 @@ export default function ChessBoard({ game, setGame, player }) {
                 return (
                   <div
                     key={r + c}
-                    className={`w-12 h-12 text-5xl border-b-2 border-l-2 border-black ${bgColor} ${greenColor} ${cursor}`}
+                    className={`w-10 sm:w-12 h-10 sm:h-12 text-4xl sm:text-5xl border-b-2 border-l-2 border-black ${bgColor} ${greenColor} ${cursor}`}
                     onMouseOver={(e) => handleMouseOver(e, r, c)}
                     onMouseOut={(e) => handleMouseOut(e, r, c)}
                     style={isMirrored ? mirroredStyle : null}
