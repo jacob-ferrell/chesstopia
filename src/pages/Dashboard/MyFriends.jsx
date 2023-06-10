@@ -1,9 +1,7 @@
 import { useState } from "react";
 import useFriends from "../../hooks/useFriends";
-import AddFriendModal from "../../components/modals/AddFriendModal";
 import getFriendStats from "../../util/getFriendStats";
 import useGames from "../../hooks/useGames";
-import useCurrentUser from "../../hooks/useCurrentUser";
 import FriendModal from "../../components/modals/FriendModal";
 
 export default function MyFriends() {
