@@ -14,8 +14,8 @@ export default function Header({}) {
         onClick={() => navigate("/")}
         className="flex gap-2 items-center justify-center cursor-pointer"
       >
-        <div className="text-5xl">♞</div>
-        <h1 className="text-4xl">Chesstopia</h1>
+        <div className="sm:text-5xl text-2xl">♞</div>
+        <h1 className="sm:text-4xl text-lg">Chesstopia</h1>
       </div>
       <div className="flex gap-2">
         <div>{!userIsLoading && user ? getFirstChar(user.email) : ""}</div>
