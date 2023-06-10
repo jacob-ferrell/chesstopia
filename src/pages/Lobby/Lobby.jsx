@@ -5,6 +5,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import joinLobby from "../../api/joinLobby";
 import { useNavigate } from "react-router-dom";
 import getGame from "../../api/getGame";
+import BackToDashboardButton from "../../components/buttons/BackToDashboardButton";
+import Spinner from "../../components/spinners/Spinner";
 
 export default function Lobby({ stompClient }) {
   const [subscription, setSubscription] = useState(null);
@@ -58,5 +60,25 @@ export default function Lobby({ stompClient }) {
     }
   }
 
-  return <div className="text-white">{waiting ? "Waiting..." : `Match found. Redirecting in ${countDown}...`}</div>;
+  return (
+    <div className="flex flex-col gap-6 items-center">
+      <div className="text-white">
+        {waiting ? (
+          <>
+
+            <Spinner text="Waiting for other players..." />
+            <div></div>
+          </>
+        ) : (
+          `Match found. Redirecting in ${countDown}...`
+        )}
+      </div>
+      <div className="flex flex-col gap-3">
+        <button className="bg-gray-700 font-bold text-gray-100 text-sm rounded p-2 shadow hover:bg-gray-600">
+          Play Against AI
+        </button>
+        <BackToDashboardButton />
+      </div>
+    </div>
+  );
 }
