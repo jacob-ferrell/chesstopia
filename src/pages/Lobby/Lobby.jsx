@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import getGame from "../../api/getGame";
 import BackToDashboardButton from "../../components/buttons/BackToDashboardButton";
 import Spinner from "../../components/spinners/Spinner";
+import useCreateGame from "../../hooks/useCreateGame";
+import makeComputerMove from "../../api/makeComputerMove";
 
 export default function Lobby({ stompClient }) {
   const [subscription, setSubscription] = useState(null);
@@ -17,6 +19,7 @@ export default function Lobby({ stompClient }) {
   const { games, isLoading: gamesLoading } = useGames();
   const { user, isLoading: userLoading } = useCurrentUser();
   const navigate = useNavigate();
+  const createGame = useCreateGame();
 
   useEffect(() => {
     if (!stompClient || (!userLoading && !user)) return;
@@ -60,6 +63,15 @@ export default function Lobby({ stompClient }) {
     }
   }
 
+  async function handleAIClick() {
+    const res = await createGame(-1);
+    const { whitePlayer, id } = res.data;
+    if (whitePlayer.email === "computer@chesstopia") {
+      await makeComputerMove(id);
+    }
+    navigate(`/game/${res.data.id}`);
+  }
+
   return (
     <div className="flex flex-col gap-6 items-center">
       <div className="text-white">
@@ -74,7 +86,7 @@ export default function Lobby({ stompClient }) {
         )}
       </div>
       <div className="flex flex-col gap-3">
-        <button className="bg-gray-700 font-bold text-gray-100 text-sm rounded p-2 shadow hover:bg-gray-600">
+        <button onClick={handleAIClick} className="bg-gray-700 font-bold text-gray-100 text-sm rounded p-2 shadow hover:bg-gray-600">
           Play Against AI
         </button>
         <BackToDashboardButton />

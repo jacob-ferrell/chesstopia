@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import getPossibleMoves from "../../api/getPossibleMoves";
 import postMove from "../../api/postMove";
+import opponentIsComputer from "../../util/opponentIsComputer";
+import makeComputerMove from "../../api/makeComputerMove";
 
 export default function ChessBoard({ game, setGame, player }) {
   const [board, setBoard] = useState(null);
@@ -59,8 +61,15 @@ export default function ChessBoard({ game, setGame, player }) {
 
   async function makeMove(y1, x1) {
     const { x, y } = selectedPiece;
-    const res = await postMove(game.id, x, y, y1, x1);
+    let res = await postMove(game.id, x, y, y1, x1);
     setGame(res.data);
+    if (opponentIsComputer(game)) {
+      //const start = Date.now();
+      res = await makeComputerMove(game.id);
+      /* const end = Date.now();
+      await new Promise(res => setTimeout(res, 10000 - (end - start))); */
+      setGame(res.data);
+    }
     return setSelectedPiece(null);
   }
 
@@ -120,7 +129,11 @@ export default function ChessBoard({ game, setGame, player }) {
         </div>
         {/* Chessboard */}
         <div
-          className={isMirrored ? "shadow border-b-2 border-l-2 border-black transform rotate-180" : "shadow border-t-2 border-r-2 border-black"}
+          className={
+            isMirrored
+              ? "shadow border-b-2 border-l-2 border-black transform rotate-180"
+              : "shadow border-t-2 border-r-2 border-black"
+          }
           style={{ width: "100%", maxWidth: "100vw", overflowX: "auto" }}
         >
           {board?.map((row, r) => (
