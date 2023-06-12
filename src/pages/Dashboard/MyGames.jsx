@@ -25,7 +25,7 @@ export default function MyGames({ classNames }) {
   }
 
   return (
-    <ul>
+    <ul className="flex flex-col gap-1">
       <li className="flex justify-end mb-2 border-b border-gray-200 pb-3">
         <button
           type="button"
@@ -43,7 +43,7 @@ export default function MyGames({ classNames }) {
         games?.map((game) => {
           const { date, time } = formatDateTime(game.createdAt);
           const { moves, id } = game;
-          const isUserTurn = game.currentTurn.id === user.id;
+          const isUserTurn = !game.winner && game.currentTurn.id === user.id;
           const lastMoveDateTime = getMostRecentMove(moves)?.createdAt;
           const daysAgo = calculateDaysAgo(lastMoveDateTime);
           const lastMoveTime = formatDateTime(lastMoveDateTime).time;
@@ -56,7 +56,7 @@ export default function MyGames({ classNames }) {
               onClick={() => navigate("/game/" + id)}
             >
               <div>
-                <h3 className="text-sm font-medium leading-5 text-left">
+                <h3 className="text-sm font-medium leading-5 text-left text-gray-900">
                   {`Game against ${getOtherPlayer(game, user).email}`}
                 </h3>
                 <ul className="mt-1 flex space-x-1 text-xs font-normal leading-4 text-gray-500">
@@ -75,7 +75,7 @@ export default function MyGames({ classNames }) {
                     </>
                   )}
                   <li className="font-bold">
-                    {isUserTurn ? "Your Turn" : "Opponent's Turn"}
+                    {!!game.winner ? "Game Over" : isUserTurn ? "Your Turn" : "Opponent's Turn"}
                   </li>
                 </ul>
               </div>
