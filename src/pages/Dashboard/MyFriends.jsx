@@ -37,7 +37,7 @@ export default function MyFriends() {
                 key={friend.id}
                 className="relative rounded-md p-3 hover:bg-gray-100"
               >
-                <h3 className="text-sm font-medium leading-5 text-left">
+                <h3 className="text-sm font-medium leading-5 text-left text-gray-900">
                   {friend.email}
                 </h3>
                 <ul className="mt-1 flex space-x-1 text-xs font-normal leading-4 text-gray-500">
