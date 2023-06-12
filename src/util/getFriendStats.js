@@ -14,7 +14,7 @@ export default function getFriendStats(games, friend) {
             continue;
         }
         if (game.winner.id === friend.id) {
-            gamesWithFriend.lost.push(game);
+            friendGamesMap.lost.push(game);
             continue;
         }
         gamesWithFriend.won.push(game);
