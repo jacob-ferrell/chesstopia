@@ -63,7 +63,7 @@ export default function ChessBoard({ game, setGame, player }) {
     const { x, y } = selectedPiece;
     let res = await postMove(game.id, x, y, y1, x1);
     setGame(res.data);
-    if (opponentIsComputer(game)) {
+    if (opponentIsComputer(game) && game.winner === null) {
       //const start = Date.now();
       res = await makeComputerMove(game.id);
       /* const end = Date.now();
@@ -108,7 +108,7 @@ export default function ChessBoard({ game, setGame, player }) {
     if (game?.pieces) {
       setBoard(initializeBoard());
     }
-  }, [game]);
+  }, [game, game?.winner]);
 
   return (
     <div className="flex flex-col gap-2">
