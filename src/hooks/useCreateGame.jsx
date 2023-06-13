@@ -5,14 +5,16 @@ const useCreateGame = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation((friendId) => createGame(friendId), {
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries('games');
+      return data;
     },
   });
 
   const handleCreateGame = async (friendId) => {
     try {
-      await mutation.mutateAsync(friendId);
+      const res = await mutation.mutateAsync(friendId);
+      return res;
     } catch (error) {
       alert('Error creating game: ' + error);
     }
