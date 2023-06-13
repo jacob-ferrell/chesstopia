@@ -22,7 +22,7 @@ export default function Game({ stompClient }) {
 
   useEffect(() => {
     if (isLoading) return;
-    if (!game) {
+    if (!game || game.id === undefined) {
       setGameFromURL();
       return;
     }
@@ -35,7 +35,7 @@ export default function Game({ stompClient }) {
     const isInCheck = playerInCheck === color;
     const isTurn = currentTurn?.email === user.email;
     setPlayer({ ...curPlayer, color, isTurn, isInCheck });
-  }, [game, game?.id, isLoading, game?.currentTurn, game?.playerInCheck]);
+  }, [game, game?.id, isLoading, game?.currentTurn, game?.playerInCheck, game?.winner]);
 
   useEffect(() => {
     if (!player || !stompClient || player.isTurn) return;
