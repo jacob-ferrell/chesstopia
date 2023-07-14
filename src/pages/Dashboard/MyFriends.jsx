@@ -2,7 +2,7 @@ import { useState } from "react";
 import useFriends from "../../hooks/useFriends";
 import getFriendStats from "../../util/getFriendStats";
 import useGames from "../../hooks/useGames";
-import FriendModal from "../../components/modals/FriendModal";
+import AddFriendModal from "../../components/modals/AddFriendModal";
 
 export default function MyFriends() {
   const { friends, isLoading } = useFriends();
@@ -14,7 +14,7 @@ export default function MyFriends() {
 
   return (
     <>
-      <FriendModal isOpen={showModal} closeModal={() => setShowModal(false)} />
+      <AddFriendModal isOpen={showModal} closeModal={() => setShowModal(false)} />
       <ul>
         <li className="flex justify-end mb-2 border-b border-gray-200 pb-3">
           <button
@@ -27,7 +27,7 @@ export default function MyFriends() {
         </li>
         {!friends.length ? (
           <li>
-            <div>User has no friends</div>
+            <div className="text-gray-900">Your friendlist is empty</div>
           </li>
         ) : (
           friends?.map((friend) => {
@@ -38,7 +38,7 @@ export default function MyFriends() {
                 className="relative rounded-md p-3 hover:bg-gray-100"
               >
                 <h3 className="text-sm font-medium leading-5 text-left text-gray-900">
-                  {friend.email}
+                  {`${friend.firstName}${friend.lastName ? ' ' + friend.lastName : ' - '}${friend.email}`}
                 </h3>
                 <ul className="mt-1 flex space-x-1 text-xs font-normal leading-4 text-gray-500">
                   <li>{`Open Games: ${stats.open.length}`}</li>
