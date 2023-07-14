@@ -1,10 +1,10 @@
 import getFirstChar from "../util/getFirstChar";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useNotifications from "../hooks/useNotifications";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Bell, LogOut, Settings } from "react-feather";
 import useLogout from "../hooks/useLogout";
-import { useEffect, useState, Fragment, useRef } from "react";
+import { useEffect, useState, Fragment } from "react";
 import { Menu, Transition } from "@headlessui/react";
 
 export default function Header({}) {
