@@ -3,6 +3,9 @@ import getPossibleMoves from "../../api/getPossibleMoves";
 import postMove from "../../api/postMove";
 import opponentIsComputer from "../../util/opponentIsComputer";
 import makeComputerMove from "../../api/makeComputerMove";
+import upgradePawn from "../../api/upgradePawn";
+import UpgradePawnModal from "../../components/modals/UpgradePawnModal";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ChessBoard({ game, setGame, player }) {
   const [board, setBoard] = useState(null);
@@ -11,19 +14,25 @@ export default function ChessBoard({ game, setGame, player }) {
     dark: "bg-yellow-900",
     light: "bg-yellow-600",
   });
+  const [showUpgradePawnModal, setShowUpgradePawnModal] = useState(false);
+
+  const queryClient = useQueryClient();
+
   const isMirrored = player?.color === "BLACK";
   const letters = !isMirrored ? "ABCDEFGH" : "HGFEDCBA";
   const numbers = isMirrored ? "12345678" : "87654321";
   const isPlayerTurn = player?.isTurn;
 
-  const chessPieces = {
+  const [chessPieces] = useState({
     KING: "\u265A",
     QUEEN: "\u265B",
     ROOK: "\u265C",
     BISHOP: "\u265D",
     KNIGHT: "\u265E",
     PAWN: "\u265F",
-  };
+  });
+
+  const [movePositions, setMovePositions] = useState({});
 
   const mirroredStyle = {
     transform: `rotate(180deg)`,
@@ -47,7 +56,6 @@ export default function ChessBoard({ game, setGame, player }) {
 
   async function handleClick(e, piece, y1, x1) {
     const color = e.currentTarget.dataset.color;
-    console.log(isEnemyPiece(color));
     if (isEnemyPiece(color) && !isPossibleMove(y1, x1)) return;
 
     if (isPossibleMove(y1, x1)) {
@@ -61,15 +69,29 @@ export default function ChessBoard({ game, setGame, player }) {
 
   async function makeMove(y1, x1) {
     const { x, y } = selectedPiece;
+    if (selectedPiece.type === "PAWN" && [0, 7].includes(y1)) {
+      setMovePositions({
+        x, y, x1, y1
+      })
+      setShowUpgradePawnModal(true);
+      setSelectedPiece(null);
+      return;
+    }
     let res = await postMove(game.id, x, y, y1, x1);
+    console.log(res.data);
+    if (selectedPiece.type === "PAWN" && [0, 7].includes(y1)) {
+      setShowUpgradePawnModal(true);
+      res = await upgradePawn(game.id, "QUEEN", x1, y1);
+    }
     setGame(res.data);
-    if (opponentIsComputer(game) && game.winner === null) {
+    if (opponentIsComputer(game) && !game.gameOver) {
       //const start = Date.now();
       res = await makeComputerMove(game.id);
       /* const end = Date.now();
       await new Promise(res => setTimeout(res, 10000 - (end - start))); */
       setGame(res.data);
     }
+    queryClient.invalidateQueries("notifications");
     return setSelectedPiece(null);
   }
 
@@ -108,77 +130,89 @@ export default function ChessBoard({ game, setGame, player }) {
     if (game?.pieces) {
       setBoard(initializeBoard());
     }
-  }, [game, game?.winner]);
+  }, [game, game?.gameOver]);
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="text-xl  sm:text-2xl flex justify-between pl-9 pr-4 text-gray-200">
-        {letters.split("").map((c) => (
-          <div key={c}>
-            <span>{c}</span>
-          </div>
-        ))}
-      </div>
-      <div className="flex gap-2">
-        <div className="text-xl sm:text-2xl flex flex-col justify-between text-gray-200">
-          {numbers.split("").map((c) => (
+    <>
+      <UpgradePawnModal
+        setGame={(game) => setGame(game)}
+        movePositions={movePositions}
+        isOpen={showUpgradePawnModal}
+        closeModal={() => setShowUpgradePawnModal(false)}
+        chessPieces={chessPieces}
+        game={game}
+      />
+      <div className="flex flex-col gap-2">
+        <div className="text-xl  sm:text-2xl flex justify-between pl-9 pr-4 text-gray-200">
+          {letters.split("").map((c) => (
             <div key={c}>
               <span>{c}</span>
             </div>
           ))}
         </div>
-        {/* Chessboard */}
-        <div
-          className={
-            isMirrored
-              ? "shadow border-b-2 border-l-2 border-black transform rotate-180"
-              : "shadow border-t-2 border-r-2 border-black"
-          }
-          style={{ width: "100%", maxWidth: "100vw", overflowX: "auto" }}
-        >
-          {board?.map((row, r) => (
-            <div key={r} className="flex h-10 sm:h-12">
-              {row?.map((col, c) => {
-                const piece = col;
-                const greenColor =
-                  selectedPiece?.id === piece.id ? "text-green-500" : "";
-                const cursor =
-                  piece?.color == player?.color
-                    ? "cursor-pointer"
-                    : "cursor-default";
-                const bgColor = !isDarkSpace(r, c) ? colors.light : colors.dark;
-                return (
-                  <div
-                    key={r + c}
-                    className={`w-10 sm:w-12 h-10 sm:h-12 text-4xl sm:text-5xl border-b-2 border-l-2 border-black ${bgColor} ${greenColor} ${cursor}`}
-                    onMouseOver={(e) => handleMouseOver(e, r, c)}
-                    onMouseOut={(e) => handleMouseOut(e, r, c)}
-                    style={isMirrored ? mirroredStyle : null}
-                    data-color={piece?.color}
-                    onClick={(e) =>
-                      isPlayerTurn ? handleClick(e, piece, r, c) : null
-                    }
-                  >
-                    <span
-                      className={
-                        piece?.id === selectedPiece?.id
-                          ? "text-green-500"
-                          : piece?.color === "WHITE"
-                          ? "text-gray-200"
-                          : piece?.color === "BLACK"
-                          ? "text-zinc-900"
-                          : ""
+        <div className="flex gap-2">
+          <div className="text-xl sm:text-2xl flex flex-col justify-between text-gray-200">
+            {numbers.split("").map((c) => (
+              <div key={c}>
+                <span>{c}</span>
+              </div>
+            ))}
+          </div>
+          {/* Chessboard */}
+          <div
+            className={
+              isMirrored
+                ? "shadow border-b-2 border-l-2 border-black transform rotate-180"
+                : "shadow border-t-2 border-r-2 border-black"
+            }
+            style={{ width: "100%", maxWidth: "100vw", overflowX: "auto", overflowY: "hidden", }}
+          >
+            {board?.map((row, r) => (
+              <div key={r} className="flex h-10 sm:h-12">
+                {row?.map((col, c) => {
+                  const piece = col;
+                  const greenColor =
+                    selectedPiece?.id === piece.id ? "text-green-500" : "";
+                  const cursor =
+                    piece?.color == player?.color
+                      ? "cursor-pointer"
+                      : "cursor-default";
+                  const bgColor = !isDarkSpace(r, c)
+                    ? colors.light
+                    : colors.dark;
+                  return (
+                    <div
+                      key={r + c}
+                      className={`w-10 sm:w-12 h-10 sm:h-12 text-4xl sm:text-5xl border-b-2 border-l-2 border-black ${bgColor} ${greenColor} ${cursor}`}
+                      onMouseOver={(e) => handleMouseOver(e, r, c)}
+                      onMouseOut={(e) => handleMouseOut(e, r, c)}
+                      style={isMirrored ? mirroredStyle : null}
+                      data-color={piece?.color}
+                      onClick={(e) =>
+                        isPlayerTurn ? handleClick(e, piece, r, c) : null
                       }
                     >
-                      {piece ? chessPieces[piece.type] : ""}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          ))}
+                      <span
+                        className={
+                          piece?.id === selectedPiece?.id
+                            ? "text-green-500"
+                            : piece?.color === "WHITE"
+                            ? "text-gray-200"
+                            : piece?.color === "BLACK"
+                            ? "text-zinc-900"
+                            : ""
+                        }
+                      >
+                        {piece ? chessPieces[piece.type] : ""}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
