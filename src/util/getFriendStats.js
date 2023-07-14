@@ -3,14 +3,19 @@ export default function getFriendStats(games, friend) {
         open: [],
         won: [],
         lost: [],
+        draw: [],
     }
     const gamesWithFriend = games.filter(game => {
         return game?.whitePlayer?.id === friend?.id || game?.blackPlayer?.id === friend?.id;
     })
 
     for (let game of gamesWithFriend) {
-        if (game.winner === null) {
+        if (!game.gameOver) {
             friendGamesMap.open.push(game);
+            continue;
+        }
+        if (game.gameOver && !game.winner) {
+            friendGamesMap.draw.push(game);
             continue;
         }
         if (game.winner.id === friend.id) {
