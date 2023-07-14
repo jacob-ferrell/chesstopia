@@ -86,7 +86,7 @@ export default function Lobby({ stompClient }) {
         )}
       </div>
       <div className="flex flex-col gap-3">
-        <button onClick={handleAIClick} className="bg-gray-700 font-bold text-gray-100 text-sm rounded p-2 shadow hover:bg-gray-600">
+        <button onClick={handleAIClick} className="bg-gradient-to-b from-gray-500 to-gray-700 font-bold text-gray-100 text-sm rounded p-2 shadow hover:bg-gray-600">
           Play Against AI
         </button>
         <BackToDashboardButton />
