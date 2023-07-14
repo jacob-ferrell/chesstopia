@@ -35,7 +35,15 @@ export default function Game({ stompClient }) {
     const isInCheck = playerInCheck === color;
     const isTurn = currentTurn?.email === user.email;
     setPlayer({ ...curPlayer, color, isTurn, isInCheck });
-  }, [game, game?.id, isLoading, game?.currentTurn, game?.playerInCheck, game?.winner]);
+    //queryClient.invalidateQueries("notifications");
+  }, [
+    game,
+    game?.id,
+    isLoading,
+    game?.currentTurn,
+    game?.playerInCheck,
+    game?.gameOver,
+  ]);
 
   useEffect(() => {
     if (!player || !stompClient || player.isTurn) return;
@@ -94,18 +102,20 @@ export default function Game({ stompClient }) {
   return (
     <>
       {game ? (
-        <>
-          <div className={``}>{`${opponent?.email}: ${
-            opponentIsConnected ? "Active" : "Inactive"
-          }`}</div>
-          <div className="flex flex-col items-center gap-3 text-white text-2xl">
+        <div className="flex flex-col">
+          <div className="flex flex-col h-24 text-xl">
+            <div className={``}>{`${opponent?.email}: ${
+              opponentIsConnected ? "Active" : "Inactive"
+            }`}</div>
             {game?.winner ? (
               <div>
                 Check Mate!{" "}
-                {game?.winner.email === user.email
+                {game.winner.email === user.email
                   ? " You Win!"
-                  : `${game?.winner.name} Wins!`}
+                  : `${game.winner.name} Wins!`}
               </div>
+            ) : game.gameOver ? (
+              <div>It's a draw!</div>
             ) : player?.isTurn ? (
               <div>It is your turn</div>
             ) : (
@@ -114,10 +124,12 @@ export default function Game({ stompClient }) {
               } move`}</div>
             )}
             {player?.isInCheck ? <div>You are in check!</div> : null}
+          </div>
+          <div className="flex flex-col items-center gap-3 text-white text-2xl">
             <ChessBoard game={game} setGame={setGame} player={player} />
             <BackToDashboardButton />
           </div>
-        </>
+        </div>
       ) : null}
     </>
   );
