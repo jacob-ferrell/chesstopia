@@ -1,7 +1,9 @@
 import axios from "axios";
+import fetchCsrfToken from "./api/fetchCsrfToken";
 
 //const baseURL = "http://127.0.0.1:8080/api/";
-const baseURL = "http://45.4.172.7:8081/chess-0.0.1-SNAPSHOT/api/";
+const baseURL =
+  "https://server.jacob-ferrell.com:8443/chess-0.0.1-SNAPSHOT/api/";
 
 const axiosInstance = axios.create({
   baseURL,
@@ -17,19 +19,19 @@ axiosInstance.interceptors.request.use(
   (request) => {
     const token = localStorage.getItem("token");
     if (token) {
-      request.headers['Authorization'] = `Bearer ${token}`;
+      request.headers["Authorization"] = `Bearer ${token}`;
     }
     return request;
   },
   (error) => {
     Promise.reject(error);
   }
-)
+);
 
 axiosInstance.interceptors.response.use(
   (response) => {
     const { data } = response;
-    if (!data?.token) return response;
+    if (!data?.token || data.headerName) return response;
     localStorage.setItem("token", data.token);
     axiosInstance.defaults.headers.common[
       "Authorization"
@@ -38,7 +40,7 @@ axiosInstance.interceptors.response.use(
   },
   (error) => {
     if (error.response && error.response.data) {
-      alert(error.response.data.message); 
+      alert(error.response.data.message);
     }
 
     return Promise.reject(error);
