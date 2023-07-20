@@ -3,11 +3,14 @@ import { useLoginUser } from "../../hooks/useLoginUser";
 import { useEffect } from "react";
 import useCurrentUser from "../../hooks/useCurrentUser";
 import { useNavigate } from "react-router-dom";
+import useGuestLogin from "../../hooks/useGuestLogin";
 
 export default function LoginPage() {
   const { user, isLoading: userIsLoading } = useCurrentUser();
 
   const { credentials, setCredentials, loginUser } = useLoginUser();
+
+  const { loading, createGuest } = useGuestLogin();
 
   const navigate = useNavigate();
 
@@ -17,21 +20,10 @@ export default function LoginPage() {
     navigate("/dashboard");
   }, [userIsLoading, location.pathname]);
 
-  /*  function loginAsJacob() {
-    setCredentials({
-      email: "boomkablamo@gmail.com",
-      password: "",
-    });
-    loginUser();
+  async function handleGuestLoginClick(e) {
+    await createGuest();
   }
 
-  function loginAsCindy() {
-    setCredentials({
-      email: "cindy@gmail.com",
-      password: "",
-    });
-    loginUser();
-  } */
 
   return (
     <div className="flex flex-col gap-6 p-4 max-w-xl w-full">
@@ -46,6 +38,12 @@ export default function LoginPage() {
         className="text-gray-100 bg-gradient-to-b from-sky-900 to-sky-600 hover:brightness-125 shadow font-medium rounded py-2"
       >
         Register
+      </button>
+      <button
+        onClick={handleGuestLoginClick}
+        className="text-gray-100 bg-gradient-to-b from-sky-900 to-sky-600 hover:brightness-125 shadow font-medium rounded py-2"
+      >
+        Sign In As Guest
       </button>
       {/* <button onClick={loginAsJacob}>Login As Jacob</button>
       <button onClick={loginAsCindy}>Login As Cindy</button> */}
