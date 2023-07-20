@@ -1,7 +1,7 @@
 import "./App.css";
 import { useState, useEffect } from "react";
 import Game from "./pages/Game/Game";
-import { Client } from "@stomp/stompjs";
+import { Client, Stomp } from "@stomp/stompjs";
 import { useQueryClient } from "@tanstack/react-query";
 import LoginPage from "./pages/Login/LoginPage";
 import Dashboard from "./pages/Dashboard/Dashboard";
@@ -10,6 +10,7 @@ import Header from "./components/Header";
 import useCurrentUser from "./hooks/useCurrentUser";
 import Lobby from "./pages/Lobby/Lobby";
 import SignUpPage from "./pages/SignUp/SignUpPage";
+import fetchCsrfToken from "./api/fetchCsrfToken";
 
 function App() {
   const [selectedGame, setSelectedGame] = useState(null);
@@ -27,23 +28,12 @@ function App() {
   }, [isLoading, user, location.pathname]);
 
   useEffect(() => {
+    console.log(user)
     if (!user) return;
-    const client = new Client({
-      brokerURL: `ws://45.4.172.7:8081/chess-0.0.1-SNAPSHOT/websocket`,
-      onConnect: () => {
-        console.log("Connected");
-        const subscription = client.subscribe(
-          `/topic/user/${user?.id}`,
-          (message) => queryClient.invalidateQueries()
-        );
-        setSubscription(subscription);
-      },
-    });
-    client.activate();
-    setStompClient(client);
+    connectStompClient();
     return () => {
       subscription?.unsubscribe();
-      client.deactivate();
+      stompClient?.deactivate();
     };
   }, [user?.id]);
 
@@ -52,6 +42,32 @@ function App() {
       navigate("/dashboard");
     }
   }, [location.pathname]);
+
+  async function connectStompClient() {
+ 
+    //const { headerName, token } = await fetchCsrfToken();
+
+    const stompClient = Stomp.client(
+      "wss://server.jacob-ferrell.com:8443/chess-0.0.1-SNAPSHOT/websocket"
+    );
+    setStompClient(stompClient);
+    const headers = {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      //[headerName]: token,
+      
+    };
+
+    stompClient.connect(headers, function (frame) {
+      console.log("Connected");
+
+      const subscription = stompClient.subscribe(`/topic/user/${user?.id}`, function (message) {
+        queryClient.invalidateQueries()
+      });
+      setSubscription(subscription);
+      setSubscription
+
+    });
+  }
 
   return (
     <div className="App w-full pt-[80px] h-full bg-gradient-to-t from-gray-700 to-gray-900 flex justify-center">
@@ -66,15 +82,8 @@ function App() {
         />
         <Route
           path={"/dashboard/*"}
-          element={
-            <Dashboard
-              setGame={setSelectedGame}
-              game={selectedGame}
-            />
-          }
-        >
-          
-        </Route>
+          element={<Dashboard setGame={setSelectedGame} game={selectedGame} />}
+        ></Route>
         <Route
           path="/game/:gameId"
           element={
