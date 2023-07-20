@@ -3,15 +3,9 @@
 - Chesstopia is a website for users to play chess with friends or an AI opponent in real time over the web.
 
 ### Screenshots
-<<<<<<< HEAD
 <div style="display: flex; gap: 2rem;">
   <img src="images/dashboard.jpg" alt="Image 1" style="margin-right: 10px;" width="300" height="auto">
   <img src="images/game.jpg" alt="Image 2" width="300" height="auto">
-=======
-<div style="display: flex;">
-  <img src="images/dashboard.jpg" alt="Image 1" width="200" height="auto">
-  <img src="images/game.jpg" alt="Image 2" width="200" height="auto">
->>>>>>> e40df4d6ab4b5168742416d9b2e052f55e24e044
 </div>
 
 ### Project Goals
