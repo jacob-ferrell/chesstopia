@@ -44,10 +44,10 @@ export default function Tabs({ setGame }) {
   }
 
   useEffect(() => {
-    const path = location.pathname.split("/").at(-1);
+    const path = location.hash.split("/").at(-1);
     if (!Object.keys(pageMap).includes(path)) return tabRefs["My Games"].current.click();
     tabRefs[pageMap[path]].current.click();
-  }, [location.pathname]);
+  }, [location.hash]);
 
   return (
     <div className="w-full max-w-xl px-2 py-6 sm:px-0">
