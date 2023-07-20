@@ -104,9 +104,9 @@ export default function Game({ stompClient }) {
       {game ? (
         <div className="flex flex-col">
           <div className="flex flex-col h-24 text-xl">
-            <div className={``}>{`${opponent?.email}: ${
+            {/* <div className={``}>{`${opponent?.email}: ${
               opponentIsConnected ? "Active" : "Inactive"
-            }`}</div>
+            }`}</div> */}
             {game?.winner ? (
               <div>
                 Check Mate!{" "}
