@@ -2,6 +2,10 @@
 ### Description
 - Chesstopia is a website for users to play chess with friends or an AI opponent in real time over the web.
 
+### Links
+- <a href="https://www.jacob-ferrell.com/chesstopia">Live Demo</a>
+- <a href="https://github.com/jacob-ferrell/online-chess-backend">Backend Repository</a>
+
 ### Screenshots
 <div style="display: flex; gap: 2rem;">
   <img src="images/dashboard.jpg" alt="Image 1" style="margin-right: 10px;" width="300" height="auto">
@@ -22,7 +26,6 @@
 - React
 - Java/Spring Boot
 - PostgreSQL 
-- Apache Tomcat
 
 ### AI Capabilities
-- The computer AI is very basic.  It will make a random move for a random piece. However, it will always prioritize moves that result in checkmate, check, or the loss of a piece for the opposing player (the user) in that order.
+- The computer AI is very basic.  It will make a random move for a random piece. However, it will always prioritize moves that result in checkmate, check, or the loss of a piece for the opposing player (the user), in that order.
