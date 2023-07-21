@@ -45,7 +45,7 @@ export default function MyGames({ classNames }) {
             >
               <div>
                 <h3 className="text-sm font-medium leading-5 text-left text-gray-900">
-                  {`Game against ${getOtherPlayer(game, user).email}`}
+                  {`Game against ${getOtherPlayer(game, user)?.email}`}
                 </h3>
                 <ul className="mt-1 flex space-x-1 text-xs font-normal leading-4 text-gray-500">
                   {/* <li>{`Started: ${date}`}</li>
