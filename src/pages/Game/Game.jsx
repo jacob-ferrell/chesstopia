@@ -7,6 +7,7 @@ import formatName from "../../util/formatName";
 import useCurrentUser from "../../hooks/useCurrentUser";
 import { useNavigate } from "react-router-dom";
 import BackToDashboardButton from "../../components/buttons/BackToDashboardButton";
+import Spinner from "../../components/spinners/Spinner";
 
 export default function Game({ stompClient }) {
   const queryClient = useQueryClient();
@@ -19,6 +20,7 @@ export default function Game({ stompClient }) {
   const [opponentIsConnected, setOpponentIsConnected] = useState(false);
   const [connectedTimeout, setConnectedTimeout] = useState(null);
   const [subscription, setSubscription] = useState(null);
+  const [loadingPossibleMoves, setLoadingPossibleMoves] = useState(false);
 
   useEffect(() => {
     if (isLoading) return;
@@ -103,7 +105,7 @@ export default function Game({ stompClient }) {
     <>
       {game ? (
         <div className="flex flex-col">
-          <div className="flex flex-col h-24 text-xl">
+          <div className="flex flex-col h-24 text-xl items-center">
             <div className={``}>{`Playing against: ${opponent?.email}`}</div>
             {game?.winner ? (
               <div>
@@ -122,9 +124,10 @@ export default function Game({ stompClient }) {
               } move`}</div>
             )}
             {player?.isInCheck ? <div>You are in check!</div> : null}
+            {loadingPossibleMoves ?<Spinner text="Loading possible moves..."/> : null }
           </div>
           <div className="flex flex-col items-center gap-3 text-white text-2xl">
-            <ChessBoard game={game} setGame={setGame} player={player} />
+            <ChessBoard game={game} setGame={setGame} player={player} setLoadingMoves={setLoadingPossibleMoves}/>
             <BackToDashboardButton />
           </div>
         </div>

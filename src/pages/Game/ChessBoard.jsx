@@ -7,7 +7,7 @@ import upgradePawn from "../../api/upgradePawn";
 import UpgradePawnModal from "../../components/modals/UpgradePawnModal";
 import { useQueryClient } from "@tanstack/react-query";
 
-export default function ChessBoard({ game, setGame, player }) {
+export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
   const [board, setBoard] = useState(null);
   const [selectedPiece, setSelectedPiece] = useState(null);
   const [colors, setColors] = useState({
@@ -63,7 +63,9 @@ export default function ChessBoard({ game, setGame, player }) {
     }
     setSelectedPiece(piece);
     if (!piece) return;
+    setLoadingMoves(true);
     const possibleMoves = await getPossibleMoves(game.id, piece.y, piece.x);
+    setLoadingMoves(false);
     setSelectedPiece((prev) => ({ ...prev, possibleMoves }));
   }
 
