@@ -2,7 +2,6 @@ import { useState } from "react";
 import axiosInstance from "../axios";
 import { useNavigate } from "react-router-dom";
 import useCurrentUser from "./useCurrentUser";
-import generateRandomString from "../util/generateRandomString";
 
 export default function useSignUp() {
   const [credentials, setCredentials] = useState({
@@ -15,18 +14,8 @@ export default function useSignUp() {
   const { refetch } = useCurrentUser();
   const navigate = useNavigate();
 
-  async function signUp(e = null) {
-    e?.preventDefault();
-    if (!e) {
-      const password = generateRandomString(15);
-      setCredentials({
-        email: `Guest${generateRandomString(5)}@${generateRandomString(6)}.com`,
-        password,
-        confirmPassword: password,
-        firstName: "Guest",
-        lastName: "User",
-      });
-    }
+  async function signUp(e, isDemoUser = false) {
+    e.preventDefault();
     try {
       if (credentials.password !== credentials.confirmPassword) {
         throw new Error("Passwords must match");
@@ -38,6 +27,7 @@ export default function useSignUp() {
         password,
         firstName,
         lastName,
+        isDemoUser
       });
       await refetch();
       navigate("/dashboard");
