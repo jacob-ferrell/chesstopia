@@ -22,6 +22,7 @@
 - Authorization/Authentication 
 - Through the use of websockets games can be played in real-time and users can be notified of updates to ongoing games.
 - Users can add other users to their friends list by their email, allowing them to quickly challenge them to games
+- Once added to their friends list, players can view stats for all games played with that friend
 - Also through the use of websockets, notification alerts are displayed immediately for changes to the user's games and when another user adds them to their friends list
 - All game logic is computed and verified from the backend
 - A matchmaking system which places users in a lobby and immediately matches them and starts a new game with any other players who have also entered the matchmaking lobby.
