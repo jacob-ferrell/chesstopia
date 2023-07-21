@@ -77,6 +77,7 @@ export default function ChessBoard({ game, setGame, player }) {
       setSelectedPiece(null);
       return;
     }
+    optimisticallyUpdateGame(x, y, x1, y1);
     let res = await postMove(game.id, x, y, y1, x1);
     console.log(res.data);
     if (selectedPiece.type === "PAWN" && [0, 7].includes(y1)) {
@@ -85,14 +86,21 @@ export default function ChessBoard({ game, setGame, player }) {
     }
     setGame(res.data);
     if (opponentIsComputer(game) && !game.gameOver) {
-      //const start = Date.now();
       res = await makeComputerMove(game.id);
-      /* const end = Date.now();
-      await new Promise(res => setTimeout(res, 10000 - (end - start))); */
       setGame(res.data);
     }
     queryClient.invalidateQueries("notifications");
     return setSelectedPiece(null);
+  }
+
+  function optimisticallyUpdateGame(x, y, x1, y1) {
+    let gamePiecesCopy = [...game.pieces];
+    const index = gamePiecesCopy.findIndex(pieces => pieces.x === x && pieces.y === y);
+    gamePiecesCopy[index] = {...gamePiecesCopy[index], x: x1, y: y1};
+    setGame(prev => ({
+      ...prev,
+      pieces: gamePiecesCopy
+    })) 
   }
 
   function handleMouseOver(e, y, x) {
