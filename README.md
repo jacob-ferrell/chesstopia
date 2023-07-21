@@ -40,4 +40,4 @@
 - Two games are created and are viewable from the "My Games" tab
 - One of the games is against the computer AI and is immediately playable by clicking on the game info under "My Games"
 - One of the games is against another player (myself)
-- When a new game is created, white and black piece color is randomly assigned.  Meaning it might not be possible to make a move against the game against the non-AI user, since the demo user's piece color could be black for that game
+- When a new game is created, white and black piece color is randomly assigned.  Meaning it might not be immediately to make a move in the game against the non-AI user, since the demo user's piece color could be black for that game
