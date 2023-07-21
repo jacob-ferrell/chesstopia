@@ -3,14 +3,14 @@ import { useLoginUser } from "../../hooks/useLoginUser";
 import { useEffect } from "react";
 import useCurrentUser from "../../hooks/useCurrentUser";
 import { useNavigate } from "react-router-dom";
-import useGuestLogin from "../../hooks/useGuestLogin";
+import useSignUp from "../../hooks/useSignUp";
 
 export default function LoginPage() {
   const { user, isLoading: userIsLoading } = useCurrentUser();
 
   const { credentials, setCredentials, loginUser } = useLoginUser();
 
-  const { loading, createGuest } = useGuestLogin();
+  const { signUp} = useSignUp();
 
   const navigate = useNavigate();
 
@@ -21,7 +21,7 @@ export default function LoginPage() {
   }, [userIsLoading, location.pathname]);
 
   async function handleGuestLoginClick(e) {
-    await createGuest();
+    signUp(e, true);
   }
 
 
