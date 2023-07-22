@@ -10,8 +10,6 @@
     "build": "vite build",
     "preview": "vite preview"
   },
-  "proxy": "https://server.jacob-ferrell.com:8443/chess-0.0.1-SNAPSHOT",
-  "homepage": "https://jacob-ferrell.com/chesstopia",
   "dependencies": {
     "@headlessui/react": "^1.7.15",
     "@stomp/stompjs": "^7.0.0",

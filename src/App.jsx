@@ -10,7 +10,6 @@ import Header from "./components/Header";
 import useCurrentUser from "./hooks/useCurrentUser";
 import Lobby from "./pages/Lobby/Lobby";
 import SignUpPage from "./pages/SignUp/SignUpPage";
-import fetchCsrfToken from "./api/fetchCsrfToken";
 
 function App() {
   const [selectedGame, setSelectedGame] = useState(null);
@@ -46,9 +45,15 @@ function App() {
   async function connectStompClient() {
  
     //const { headerName, token } = await fetchCsrfToken();
+    let websocketURL;
+    if (import.meta.env.VITE_SERVER.includes("https")) {
+      websocketURL = "wss://server.jacob-ferrell.com:8443/chess-0.0.1-SNAPSHOT/websocket"
+    } else {
+      websocketURL = "ws://localhost:8080/websocket";
+    }
 
     const stompClient = Stomp.client(
-      "wss://server.jacob-ferrell.com:8443/chess-0.0.1-SNAPSHOT/websocket"
+      websocketURL
     );
     setStompClient(stompClient);
     const headers = {

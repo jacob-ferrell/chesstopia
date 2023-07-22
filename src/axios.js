@@ -1,9 +1,6 @@
 import axios from "axios";
-import fetchCsrfToken from "./api/fetchCsrfToken";
 
-//const baseURL = "http://127.0.0.1:8080/api/";
-const baseURL =
-  "https://server.jacob-ferrell.com:8443/chess-0.0.1-SNAPSHOT/api/";
+const baseURL = import.meta.env.VITE_SERVER + "/api";
 
 const axiosInstance = axios.create({
   baseURL,
