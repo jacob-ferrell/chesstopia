@@ -4,13 +4,14 @@ import { useEffect } from "react";
 import useCurrentUser from "../../hooks/useCurrentUser";
 import { useNavigate } from "react-router-dom";
 import useSignUp from "../../hooks/useSignUp";
+import Spinner from "../../components/spinners/Spinner";
 
 export default function LoginPage() {
   const { user, isLoading: userIsLoading } = useCurrentUser();
 
   const { credentials, setCredentials, loginUser } = useLoginUser();
 
-  const { signUp} = useSignUp();
+  const { signUp, loading } = useSignUp();
 
   const navigate = useNavigate();
 
@@ -41,9 +42,9 @@ export default function LoginPage() {
       </button>
       <button
         onClick={handleGuestLoginClick}
-        className="text-gray-100 bg-gradient-to-b from-sky-900 to-sky-600 hover:brightness-125 shadow font-medium rounded py-2"
+        className="flex justify-center text-gray-100 bg-gradient-to-b from-sky-900 to-sky-600 hover:brightness-125 shadow font-medium rounded py-2"
       >
-        Sign In As Guest
+        {loading ? <Spinner textClass="text-med" text="Generating Demo User..." /> : "Sign In As Guest"}
       </button>
       {/* <button onClick={loginAsJacob}>Login As Jacob</button>
       <button onClick={loginAsCindy}>Login As Cindy</button> */}
