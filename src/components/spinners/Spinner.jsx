@@ -1,4 +1,4 @@
-export default function Spinner({text}) {
+export default function Spinner({ text, textClass }) {
   return (
     <div role="status" className="flex items-center">
       <svg
@@ -17,7 +17,7 @@ export default function Spinner({text}) {
           fill="currentFill"
         />
       </svg>
-      <span className="text-lg">{text}</span>
+      <span className={textClass || "text-lg"}>{text}</span>
       <span className="sr-only">{text}</span>
     </div>
   );
