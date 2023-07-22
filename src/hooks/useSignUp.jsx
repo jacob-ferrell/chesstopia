@@ -11,6 +11,7 @@ export default function useSignUp() {
     firstName: "",
     lastName: "",
   });
+  const [loading, setLoading] = useState(false);
   const { refetch } = useCurrentUser();
   const navigate = useNavigate();
 
@@ -21,7 +22,7 @@ export default function useSignUp() {
         throw new Error("Passwords must match");
       }
       const { email, password, firstName, lastName } = credentials;
-      console.log(email, password, firstName, lastName);
+      setLoading(isDemoUser);
       await axiosInstance.post("/auth/register", {
         email,
         password,
@@ -30,6 +31,7 @@ export default function useSignUp() {
         isDemoUser
       });
       await refetch();
+      setLoading(false);
       navigate("/dashboard");
     } catch (error) {
       console.log(error);
@@ -37,5 +39,5 @@ export default function useSignUp() {
     }
   }
 
-  return { signUp, credentials, setCredentials };
+  return { signUp, credentials, setCredentials, loading };
 }
