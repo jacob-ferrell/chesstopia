@@ -17,6 +17,7 @@ export default defineConfig(({ command, mode }) => {
   return {
     ...defaultConfig,
     server: {
+      port: 5175,
       proxy: {
         "/api": {
           target: process.env.VITE_SERVER,

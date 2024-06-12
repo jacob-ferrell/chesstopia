@@ -3,7 +3,7 @@
 - Chesstopia is a website for users to play chess with friends or an AI opponent in real time over the web.
 
 ### Links
-- <a href="https://www.jacob-ferrell.com/chesstopia">Live Demo</a>
+- <a href="https://jacob-ferrell.github.io/chesstopia">Live Demo</a>
 - <a href="https://github.com/jacob-ferrell/online-chess-backend">Backend Repository</a>
 
 ### Screenshots

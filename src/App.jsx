@@ -47,9 +47,9 @@ function App() {
     //const { headerName, token } = await fetchCsrfToken();
     let websocketURL;
     if (import.meta.env.VITE_SERVER.includes("https")) {
-      websocketURL = "wss://server.jacob-ferrell.com:8443/chess-0.0.1-SNAPSHOT/websocket"
+      websocketURL = "wss://server.jacobferrell.net:8443/chess-0.0.1-SNAPSHOT/websocket"
     } else {
-      websocketURL = "ws://localhost:8080/websocket";
+      websocketURL = "ws://192.168.1.18:8081/websocket";
     }
 
     const stompClient = Stomp.client(
