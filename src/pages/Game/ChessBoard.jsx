@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import getPossibleMoves from "../../api/getPossibleMoves";
+import isPawnUpgrade from "../../util/isPawnUpgrade.js"
 import postMove from "../../api/postMove";
 import opponentIsComputer from "../../util/opponentIsComputer";
 import makeComputerMove from "../../api/makeComputerMove";
@@ -44,11 +45,13 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
 
   function initializeBoard() {
     const board = [];
+
     for (let i = 0; i < 8; i++) {
       board[i] = new Array(8).fill("");
     }
+
     game?.pieces.forEach((piece) => {
-      const { y, x } = piece;
+      const { y, x } = piece?.position;
       board[y][x] = piece;
     });
     return board;
@@ -61,17 +64,24 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
     if (isPossibleMove(y1, x1)) {
       return await makeMove(y1, x1);
     }
+
     setSelectedPiece(piece);
+
     if (!piece) return;
+
     setLoadingMoves(true);
-    const possibleMoves = await getPossibleMoves(game.id, piece.y, piece.x);
+
+    const possibleMoves = await getPossibleMoves(game.id, piece.position.y, piece.position.x);
+
     setLoadingMoves(false);
     setSelectedPiece((prev) => ({ ...prev, possibleMoves }));
   }
 
   async function makeMove(y1, x1) {
-    const { x, y } = selectedPiece;
-    if (selectedPiece.type === "PAWN" && [0, 7].includes(y1)) {
+
+    const { x, y } = selectedPiece?.position;
+
+    if (isPawnUpgrade(selectedPiece, y1)) {
       setMovePositions({
         x, y, x1, y1
       })
@@ -79,13 +89,18 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
       setSelectedPiece(null);
       return;
     }
+
     optimisticallyUpdateGame(x, y, x1, y1);
+
     let res = await postMove(game.id, x, y, y1, x1);
+
     console.log(res.data);
-    if (selectedPiece.type === "PAWN" && [0, 7].includes(y1)) {
+
+    if (isPawnUpgrade(selectedPiece, y1)) {
       setShowUpgradePawnModal(true);
       res = await upgradePawn(game.id, "QUEEN", x1, y1);
     }
+
     setGame(res.data);
     if (opponentIsComputer(game) && !game.gameOver) {
       res = await makeComputerMove(game.id);
@@ -97,7 +112,7 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
 
   function optimisticallyUpdateGame(x, y, x1, y1) {
     let gamePiecesCopy = [...game.pieces];
-    const index = gamePiecesCopy.findIndex(pieces => pieces.x === x && pieces.y === y);
+    const index = gamePiecesCopy.findIndex(pieces => pieces?.position?.x === x && pieces?.position?.y === y);
     gamePiecesCopy[index] = {...gamePiecesCopy[index], x: x1, y: y1};
     setGame(prev => ({
       ...prev,
@@ -180,11 +195,12 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
             {board?.map((row, r) => (
               <div key={r} className="flex h-10 sm:h-12">
                 {row?.map((col, c) => {
+                                    console.log(col, selectedPiece);
                   const piece = col;
                   const greenColor =
-                    selectedPiece?.id === piece.id ? "text-green-500" : "";
+                    selectedPiece?.id === piece?.id ? "text-green-500" : "";
                   const cursor =
-                    piece?.color == player?.color
+                    piece?.piece?.color == player?.color
                       ? "cursor-pointer"
                       : "cursor-default";
                   const bgColor = !isDarkSpace(r, c)
@@ -197,7 +213,7 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
                       onMouseOver={(e) => handleMouseOver(e, r, c)}
                       onMouseOut={(e) => handleMouseOut(e, r, c)}
                       style={isMirrored ? mirroredStyle : null}
-                      data-color={piece?.color}
+                      data-color={piece?.piece?.color}
                       onClick={(e) =>
                         isPlayerTurn ? handleClick(e, piece, r, c) : null
                       }
@@ -206,14 +222,14 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
                         className={
                           piece?.id === selectedPiece?.id
                             ? "text-green-500"
-                            : piece?.color === "WHITE"
+                            : piece?.piece?.color === "WHITE"
                             ? "text-gray-200"
-                            : piece?.color === "BLACK"
+                            : piece?.piece?.color === "BLACK"
                             ? "text-zinc-900"
                             : ""
                         }
                       >
-                        {piece ? chessPieces[piece.type] : ""}
+                        {piece?.piece ? chessPieces[piece?.piece?.type] : ""}
                       </span>
                     </div>
                   );
