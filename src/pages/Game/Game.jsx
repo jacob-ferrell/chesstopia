@@ -66,7 +66,6 @@ export default function Game({ stompClient }) {
   }
 
   async function setGameFromURL() {
-    console.log("refreshing");
     let id;
     const url = window.location.href;
     if (url.at(-1) === "/") {
@@ -78,7 +77,6 @@ export default function Game({ stompClient }) {
     }
     try {
       const res = await getGame(id);
-      console.log(res.data);
       setGame(res.data);
     } catch (error) {
       navigate("/");
@@ -87,13 +85,11 @@ export default function Game({ stompClient }) {
 
   async function handleMessage(message) {
     const receivedMessage = JSON.parse(message.body);
-    console.log(receivedMessage);
     if (receivedMessage?.player === opponent.id) {
       setOpponentIsConnected(true);
       restartTimer();
       return;
     }
-    console.log("Received message:", receivedMessage);
     if (!receivedMessage?.notification || !receivedMessage?.game) return;
     const { game, notification } = receivedMessage;
     await updateNotification(notification.id);

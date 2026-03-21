@@ -4,17 +4,29 @@ import isPawnUpgrade from "../../util/isPawnUpgrade.js"
 import postMove from "../../api/postMove";
 import opponentIsComputer from "../../util/opponentIsComputer";
 import makeComputerMove from "../../api/makeComputerMove";
-import upgradePawn from "../../api/upgradePawn";
 import UpgradePawnModal from "../../components/modals/UpgradePawnModal";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
-  const [board, setBoard] = useState(null);
-  const [selectedPiece, setSelectedPiece] = useState(null);
-  const [colors, setColors] = useState({
+
+  const COLORS = Object.freeze({
     dark: "bg-yellow-900",
     light: "bg-yellow-600",
   });
+
+  const PIECE_ICONS = Object.freeze({
+    KING: "\u265A",
+    QUEEN: "\u265B",
+    ROOK: "\u265C",
+    BISHOP: "\u265D",
+    KNIGHT: "\u265E",
+    PAWN: "\u265F",
+  });
+
+  const [board, setBoard] = useState(null);
+
+  const [selectedPiece, setSelectedPiece] = useState(null);
+
   const [showUpgradePawnModal, setShowUpgradePawnModal] = useState(false);
 
   const queryClient = useQueryClient();
@@ -23,15 +35,6 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
   const letters = !isMirrored ? "ABCDEFGH" : "HGFEDCBA";
   const numbers = isMirrored ? "12345678" : "87654321";
   const isPlayerTurn = player?.isTurn;
-
-  const [chessPieces] = useState({
-    KING: "\u265A",
-    QUEEN: "\u265B",
-    ROOK: "\u265C",
-    BISHOP: "\u265D",
-    KNIGHT: "\u265E",
-    PAWN: "\u265F",
-  });
 
   const [movePositions, setMovePositions] = useState({});
 
@@ -94,15 +97,8 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
 
     let res = await postMove(game.id, x, y, y1, x1);
 
-    console.log(res.data);
-
-    if (isPawnUpgrade(selectedPiece, y1)) {
-      setShowUpgradePawnModal(true);
-      res = await upgradePawn(game.id, "QUEEN", x1, y1);
-    }
-
     setGame(res.data);
-    if (opponentIsComputer(game) && !game.gameOver) {
+    if (opponentIsComputer(game) && !res.data.gameOver) {
       res = await makeComputerMove(game.id);
       setGame(res.data);
     }
@@ -113,7 +109,7 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
   function optimisticallyUpdateGame(x, y, x1, y1) {
     let gamePiecesCopy = [...game.pieces];
     const index = gamePiecesCopy.findIndex(pieces => pieces?.position?.x === x && pieces?.position?.y === y);
-    gamePiecesCopy[index] = {...gamePiecesCopy[index], x: x1, y: y1};
+    gamePiecesCopy[index] = {...gamePiecesCopy[index], position: { x: x1, y: y1 }};
     setGame(prev => ({
       ...prev,
       pieces: gamePiecesCopy
@@ -126,8 +122,8 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
     if (!possibleMoves?.length || !isPossibleMove(y, x)) {
       return;
     }
-    if (isDark) e.currentTarget.classList.toggle(colors.dark);
-    else e.currentTarget.classList.toggle(colors.light);
+    if (isDark) e.currentTarget.classList.toggle(COLORS.dark);
+    else e.currentTarget.classList.toggle(COLORS.light);
     e.currentTarget.classList.add("bg-green-500");
     e.currentTarget.classList.add("cursor-pointer");
   }
@@ -135,8 +131,8 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
   function handleMouseOut(e, y, x) {
     const space = e.currentTarget;
     space.classList.remove("bg-green-500");
-    if (isDarkSpace(y, x)) space.classList.add(colors.dark);
-    else space.classList.add(colors.light);
+    if (isDarkSpace(y, x)) space.classList.add(COLORS.dark);
+    else space.classList.add(COLORS.light);
     if (isPossibleMove(y, x)) space.classList.remove("cursor-pointer");
   }
 
@@ -164,7 +160,7 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
         movePositions={movePositions}
         isOpen={showUpgradePawnModal}
         closeModal={() => setShowUpgradePawnModal(false)}
-        chessPieces={chessPieces}
+        chessPieces={PIECE_ICONS}
         game={game}
       />
       <div className="flex flex-col gap-2">
@@ -195,7 +191,6 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
             {board?.map((row, r) => (
               <div key={r} className="flex h-10 sm:h-12">
                 {row?.map((col, c) => {
-                                    console.log(col, selectedPiece);
                   const piece = col;
                   const greenColor =
                     selectedPiece?.id === piece?.id ? "text-green-500" : "";
@@ -203,9 +198,15 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
                     piece?.piece?.color == player?.color
                       ? "cursor-pointer"
                       : "cursor-default";
-                  const bgColor = !isDarkSpace(r, c)
-                    ? colors.light
-                    : colors.dark;
+                  const isKingInCheck =
+                    game?.playerInCheck === player?.color &&
+                    piece?.piece?.type === "KING" &&
+                    piece?.piece?.color === player?.color;
+                  const bgColor = isKingInCheck
+                    ? "bg-red-600"
+                    : !isDarkSpace(r, c)
+                    ? COLORS.light
+                    : COLORS.dark;
                   return (
                     <div
                       key={r + c}
@@ -229,7 +230,7 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }) {
                             : ""
                         }
                       >
-                        {piece?.piece ? chessPieces[piece?.piece?.type] : ""}
+                        {piece?.piece ? PIECE_ICONS[piece?.piece?.type] : ""}
                       </span>
                     </div>
                   );
