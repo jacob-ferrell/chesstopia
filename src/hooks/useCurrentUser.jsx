@@ -1,11 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../axios";
+import hasValidToken from "../util/hasValidToken";
 export default function useCurrentUser() {
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["user"],
-    getCurrentUser
+    getCurrentUser,
+    { enabled: hasValidToken() }
   );
 
   const navigate = useNavigate();

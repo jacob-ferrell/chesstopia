@@ -1,11 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../axios";
 import { useNavigate } from "react-router-dom";
+import hasValidToken from "../util/hasValidToken";
 
 export default function useNotifications() {
   const { data, isLoading, isError } = useQuery(
     ["notifications"],
-    getNotifications
+    getNotifications,
+    { enabled: hasValidToken() }
   );
   const navigate = useNavigate();
 
