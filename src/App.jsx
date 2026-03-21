@@ -27,7 +27,6 @@ function App() {
   }, [isLoading, user, location.pathname]);
 
   useEffect(() => {
-    console.log(user)
     if (!user) return;
     connectStompClient();
     return () => {
@@ -55,6 +54,7 @@ function App() {
     const stompClient = Stomp.client(
       websocketURL
     );
+    stompClient.debug = () => {};
     setStompClient(stompClient);
     const headers = {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -63,7 +63,6 @@ function App() {
     };
 
     stompClient.connect(headers, function (frame) {
-      console.log("Connected");
 
       const subscription = stompClient.subscribe(`/topic/user/${user?.id}`, function (message) {
         queryClient.invalidateQueries()
