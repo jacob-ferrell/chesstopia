@@ -1,0 +1,48 @@
+import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import axiosInstance from "../axios";
+import hasValidToken from "../util/hasValidToken";
+import { User } from "../types";
+
+interface UseCurrentUserResult {
+  user: User | null | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  refetch: () => Promise<{ data: User | null | undefined }>;
+}
+
+export default function useCurrentUser(): UseCurrentUserResult {
+
+  const { data, isLoading, isError, refetch } = useQuery(
+    ["user"],
+    getCurrentUser,
+    { enabled: hasValidToken() }
+  );
+
+  const navigate = useNavigate();
+
+  async function getCurrentUser(): Promise<User | null> {
+    try {
+      if (!localStorage.getItem("token")) {
+        throw new Error("User has no auth token");
+      }
+      const res = await axiosInstance.get('current-user');
+      return res.data;
+    } catch(error) {
+      localStorage.removeItem("token");
+      return null;
+    }
+   /*  if (!localStorage.getItem("token")) return null;
+    const res = await axiosInstance.get("current-user");
+    if (res.status === 403) return useNavigate()("/login");
+    if (res.status === 200) return res.data;
+    return null; */
+  }
+
+  return {
+    user: data,
+    isLoading,
+    isError,
+    refetch,
+  };
+}
