@@ -11,7 +11,7 @@ interface UseNotificationsResult {
 }
 
 export default function useNotifications(): UseNotificationsResult {
-  const { data, isLoading, isError } = useQuery(
+  const { data, isInitialLoading, isError } = useQuery(
     ["notifications"],
     getNotifications,
     { enabled: hasValidToken() }
@@ -31,7 +31,7 @@ export default function useNotifications(): UseNotificationsResult {
   }
   return {
     notifications: data,
-    isLoading,
+    isLoading: isInitialLoading,
     isError,
   };
 }

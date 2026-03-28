@@ -45,12 +45,9 @@ function App() {
   async function connectStompClient() {
 
     //const { headerName, token } = await fetchCsrfToken();
-    let websocketURL: string;
-    if (import.meta.env.VITE_SERVER.includes("https")) {
-      websocketURL = "wss://server.jacobferrell.net:8443/chess-0.0.1-SNAPSHOT/websocket"
-    } else {
-      websocketURL = "ws://192.168.1.18:8081/websocket";
-    }
+    const websocketURL = (import.meta.env.VITE_SERVER as string)
+      .replace("https://", "wss://")
+      .replace("http://", "ws://") + "/websocket";
 
     const stompClient = Stomp.client(
       websocketURL

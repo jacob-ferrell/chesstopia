@@ -13,7 +13,7 @@ interface UseCurrentUserResult {
 
 export default function useCurrentUser(): UseCurrentUserResult {
 
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isInitialLoading, isError, refetch } = useQuery(
     ["user"],
     getCurrentUser,
     { enabled: hasValidToken() }
@@ -41,7 +41,7 @@ export default function useCurrentUser(): UseCurrentUserResult {
 
   return {
     user: data,
-    isLoading,
+    isLoading: isInitialLoading,
     isError,
     refetch,
   };
