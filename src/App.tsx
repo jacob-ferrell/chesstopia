@@ -53,7 +53,6 @@ function App() {
       websocketURL
     );
     stompClient.debug = () => {};
-    setStompClient(stompClient);
     const headers: Record<string, string> = {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
       //[headerName]: token,
@@ -61,12 +60,11 @@ function App() {
     };
 
     stompClient.connect(headers, function (_frame: unknown) {
-
+      setStompClient(stompClient);
       const subscription = stompClient.subscribe(`/topic/user/${user?.id}`, function (message) {
         queryClient.invalidateQueries()
       });
       setSubscription(subscription);
-      setSubscription
 
     });
   }
