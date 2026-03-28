@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import useCurrentUser from "../../hooks/useCurrentUser";
-import useGames from "../../hooks/useGames";
-import { useQueryClient } from "@tanstack/react-query";
-import joinLobby from "../../api/joinLobby";
 import { useNavigate } from "react-router-dom";
-import getGame from "../../api/getGame";
 import BackToDashboardButton from "../../components/buttons/BackToDashboardButton";
 import Spinner from "../../components/spinners/Spinner";
 import useCreateGame from "../../hooks/useCreateGame";
@@ -15,8 +11,8 @@ interface LobbyProps {
   stompClient: Client | null;
 }
 
-interface LobbyMessage {
-  game: string;
+interface MatchMessage {
+  gameId: number;
 }
 
 export default function Lobby({ stompClient }: LobbyProps) {
@@ -24,28 +20,26 @@ export default function Lobby({ stompClient }: LobbyProps) {
   const [waiting, setWaiting] = useState(true);
   const [countDown, setCountDown] = useState(3);
 
-  const queryClient = useQueryClient();
-  const { games, isLoading: gamesLoading } = useGames();
-  const { user, isLoading: userLoading } = useCurrentUser();
+  const { user } = useCurrentUser();
   const navigate = useNavigate();
   const createGame = useCreateGame();
 
   useEffect(() => {
-    if (!stompClient || (!userLoading && !user)) return;
-    const url = `/topic/lobby`;
+    if (!stompClient || !user) return;
 
-    const subscription = stompClient.subscribe(url, (message: IMessage) =>
-      handleMessage(message)
+    const sub = stompClient.subscribe(
+      `/topic/matchmaking/${user.id}`,
+      handleMessage
     );
-    setSubscription(subscription);
-    return () => {
-      subscription?.unsubscribe();
-    };
-  }, [stompClient]);
+    setSubscription(sub);
 
-  useEffect(() => {
-    connectToLobby();
-  }, []);
+    stompClient.publish({ destination: "/app/matchmaking/join" });
+
+    return () => {
+      sub.unsubscribe();
+      stompClient.publish({ destination: "/app/matchmaking/leave" });
+    };
+  }, [stompClient, user?.id]);
 
   useEffect(() => {
     if (waiting || countDown <= 0) return;
@@ -53,23 +47,14 @@ export default function Lobby({ stompClient }: LobbyProps) {
     return () => clearTimeout(timer);
   }, [waiting, countDown]);
 
-  async function handleMessage(message: IMessage) {
-    const { game } = JSON.parse(message.body) as LobbyMessage;
-    const res = await getGame(game);
-    if (!res?.data) return;
-    redirect(res.data.id);
+  function handleMessage(message: IMessage) {
+    const { gameId } = JSON.parse(message.body) as MatchMessage;
+    redirect(gameId);
   }
 
-  function redirect(gameId: string) {
+  function redirect(gameId: number) {
     setWaiting(false);
     setTimeout(() => navigate("/game/" + gameId), 3000);
-  }
-
-  async function connectToLobby() {
-    const res = await joinLobby();
-    if (!Array.isArray(res.data)) {
-      redirect(res.data.id);
-    }
   }
 
   async function handleAIClick() {
@@ -86,7 +71,6 @@ export default function Lobby({ stompClient }: LobbyProps) {
       <div className="text-white">
         {waiting ? (
           <>
-
             <Spinner text="Waiting for other players..." />
             <div></div>
           </>

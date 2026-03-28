@@ -22,7 +22,7 @@ function App() {
   const { user, isLoading } = useCurrentUser();
 
   useEffect(() => {
-    if (isLoading || user !== null) return;
+    if (isLoading || user != null) return;
     if (location.pathname.includes("signup")) return;
     navigate("/login");
   }, [isLoading, user, location.pathname]);
