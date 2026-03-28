@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ChessBoard from "./ChessBoard";
 import getGame from "../../api/getGame";
-import updateNotification from "../../api/updateNotification";
 import { useQueryClient } from "@tanstack/react-query";
 import formatName from "../../util/formatName";
 import useCurrentUser from "../../hooks/useCurrentUser";
@@ -20,8 +19,7 @@ interface GameProps {
 }
 
 interface GameMessage {
-  player?: string;
-  notification?: { id: string };
+  player?: number;
   game?: GameType;
 }
 
@@ -37,6 +35,8 @@ export default function Game({ stompClient }: GameProps) {
   const [connectedTimeout, setConnectedTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [subscription, setSubscription] = useState<StompSubscription | null>(null);
   const [loadingPossibleMoves, setLoadingPossibleMoves] = useState(false);
+  const handleMessageRef = useRef(handleMessage);
+  handleMessageRef.current = handleMessage;
 
   useEffect(() => {
     if (isLoading) return;
@@ -64,17 +64,18 @@ export default function Game({ stompClient }: GameProps) {
   ]);
 
   useEffect(() => {
-    if (!player || !stompClient || player.isTurn) return;
+    if (!player || !stompClient) return;
     const url = `/topic/game/${game?.id}`;
 
     const subscription = stompClient.subscribe(url, (message: IMessage) =>
-      handleMessage(message)
+      handleMessageRef.current(message)
     );
+    stompClient.publish({ destination: `/app/game/${game?.id}/connected` });
     setSubscription(subscription);
     return () => {
       subscription?.unsubscribe();
     };
-  }, [player?.isTurn, stompClient]);
+  }, [player?.email, stompClient]);
 
   function restartTimer() {
     clearTimeout(connectedTimeout ?? undefined);
@@ -99,18 +100,17 @@ export default function Game({ stompClient }: GameProps) {
     }
   }
 
-  async function handleMessage(message: IMessage) {
+  function handleMessage(message: IMessage) {
     const receivedMessage: GameMessage = JSON.parse(message.body);
-    if (receivedMessage?.player === opponent!.id) {
+    console.log("game message received", receivedMessage, "opponent id:", opponent?.id);
+    if (String(receivedMessage?.player) === String(opponent?.id)) {
       setOpponentIsConnected(true);
       restartTimer();
       return;
     }
-    if (!receivedMessage?.notification || !receivedMessage?.game) return;
-    const { game, notification } = receivedMessage;
-    await updateNotification(notification!.id);
+    if (!receivedMessage?.game) return;
     queryClient.invalidateQueries(["notifications"]);
-    setGame(game!);
+    setGame(receivedMessage.game);
   }
 
   return (
@@ -118,7 +118,17 @@ export default function Game({ stompClient }: GameProps) {
       {game ? (
         <div className="flex flex-col">
           <div className="flex flex-col h-24 text-xl items-center">
-            <div className={``}>{`Playing against: ${opponent?.email}`}</div>
+            <div className="flex items-center gap-3">
+              <span>{`Playing against: ${opponent?.email}`}</span>
+              <span className={`flex items-center gap-1.5 text-sm px-2.5 py-0.5 rounded-full font-medium ${
+                opponentIsConnected
+                  ? "bg-green-900/50 text-green-400 border border-green-700"
+                  : "bg-gray-700/50 text-gray-400 border border-gray-600"
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${opponentIsConnected ? "bg-green-400" : "bg-gray-400"}`} />
+                {opponentIsConnected ? "Connected" : "Not connected"}
+              </span>
+            </div>
             {game?.winner ? (
               <div>
                 Check Mate!{" "}
