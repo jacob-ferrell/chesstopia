@@ -1,28 +1,52 @@
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, type HttpProxy } from "vite";
 import react from "@vitejs/plugin-react";
 
-const defaultConfig = {
-  //base: "/chesstopia",
-  plugins: [react()],
-};
+const DEV_PORT = 5175;
+// The backend's CORS allowlist includes this origin, so the dev proxy presents
+// itself as it regardless of which machine the browser is on.
+const DEV_ORIGIN = `http://localhost:${DEV_PORT}`;
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
-  process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
+  const env = loadEnv(mode, process.cwd());
   const isDev = mode === "development";
-  defaultConfig.base = isDev ? "/" : "/chesstopia"
+
+  const config = {
+    base: isDev ? "/" : "/chesstopia",
+    plugins: [react()],
+  };
+
   if (command !== "serve") {
-    return defaultConfig;
+    return config;
   }
+
+  // Dev server: when VITE_SERVER is empty the app talks to relative /api and
+  // /websocket paths, and Vite proxies them to the backend. That keeps every
+  // request same-origin, so the dev server can be opened from other machines
+  // on the network without touching the backend's CORS config.
+  const proxyTarget = env.VITE_PROXY_TARGET || env.VITE_SERVER || "http://localhost:8080";
+  const rewriteOrigin = (proxy: HttpProxy.Server) => {
+    proxy.on("proxyReq", (proxyReq) => proxyReq.setHeader("origin", DEV_ORIGIN));
+    proxy.on("proxyReqWs", (proxyReq) => proxyReq.setHeader("origin", DEV_ORIGIN));
+  };
+
   return {
-    ...defaultConfig,
+    ...config,
     server: {
-      port: 5175,
+      port: DEV_PORT,
       proxy: {
         "/api": {
-          target: process.env.VITE_SERVER,
-          changeOrigin: isDev,
-          secure: !isDev
+          target: proxyTarget,
+          changeOrigin: true,
+          secure: !isDev,
+          configure: rewriteOrigin,
+        },
+        "/websocket": {
+          target: proxyTarget,
+          changeOrigin: true,
+          secure: !isDev,
+          ws: true,
+          configure: rewriteOrigin,
         },
       },
     },
