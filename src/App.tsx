@@ -1,4 +1,3 @@
-import "./App.css";
 import { useState, useEffect } from "react";
 import Game from "./pages/Game/Game";
 import { Client, Stomp, StompSubscription } from "@stomp/stompjs";
@@ -70,34 +69,36 @@ function App() {
   }
 
   return (
-    <div className="App w-full pt-[80px] h-full bg-gradient-to-t from-gray-700 to-gray-900 flex justify-center">
+    <div className="app-backdrop flex min-h-screen flex-col">
       <Header />
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignUpPage />} />
-        <Route path="/lobby" element={<Lobby stompClient={stompClient} />} />
-        <Route
-          path={"/"}
-          element={<Dashboard setGame={setSelectedGame} game={selectedGame} />}
-        />
-        <Route
-          path={"/dashboard/*"}
-          element={<Dashboard setGame={setSelectedGame} game={selectedGame} />}
-        ></Route>
-        <Route
-          path="/game/:gameId"
-          element={
-            user ? (
-              <Game
-                stompClient={stompClient}
-                game={selectedGame}
-                setGame={setSelectedGame}
-                user={user}
-              />
-            ) : null
-          }
-        />
-      </Routes>
+      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 pb-10 pt-6 sm:pt-8">
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/lobby" element={<Lobby stompClient={stompClient} />} />
+          <Route
+            path={"/"}
+            element={<Dashboard setGame={setSelectedGame} game={selectedGame} />}
+          />
+          <Route
+            path={"/dashboard/*"}
+            element={<Dashboard setGame={setSelectedGame} game={selectedGame} />}
+          ></Route>
+          <Route
+            path="/game/:gameId"
+            element={
+              user ? (
+                <Game
+                  stompClient={stompClient}
+                  game={selectedGame}
+                  setGame={setSelectedGame}
+                  user={user}
+                />
+              ) : null
+            }
+          />
+        </Routes>
+      </main>
     </div>
   );
 }

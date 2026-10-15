@@ -1,80 +1,47 @@
-import { useState } from "react";
 import useSignUp from "../../hooks/useSignUp";
+import Input from "../../components/ui/Input";
+import Button from "../../components/ui/Button";
+import { SignUpCredentials } from "../../types";
 
-interface InputConfig {
+interface FieldConfig {
+  key: keyof SignUpCredentials;
   type: string;
-  onChange: () => void;
   placeholder: string;
   label: string;
   required: boolean;
+  autoComplete?: string;
 }
 
+const fields: FieldConfig[] = [
+  { key: "email", type: "email", placeholder: "you@example.com", label: "Email", required: true, autoComplete: "email" },
+  { key: "firstName", type: "text", placeholder: "First name", label: "First name", required: true, autoComplete: "given-name" },
+  { key: "lastName", type: "text", placeholder: "Last name (optional)", label: "Last name", required: false, autoComplete: "family-name" },
+  { key: "password", type: "password", placeholder: "Choose a password", label: "Password", required: true, autoComplete: "new-password" },
+  { key: "confirmPassword", type: "password", placeholder: "Repeat your password", label: "Confirm password", required: true, autoComplete: "new-password" },
+];
+
 export default function SignUpForm() {
-  const [inputMap] = useState<Record<string, InputConfig>>({
-    email: {
-      type: "email",
-      onChange: () => {},
-      placeholder: "Enter your email",
-      label: "Email",
-      required: true,
-    },
-    firstName: {
-      type: "text",
-      onChange: () => {},
-      placeholder: "Enter your first name",
-      label: "First Name",
-      required: true,
-    },
-    lastName: {
-      type: "text",
-      onChange: () => {},
-      placeholder: "Enter your first name",
-      label: "Last Name",
-      required: false,
-    },
-    password: {
-      type: "password",
-      onChange: () => {},
-      placeholder: "Enter your chosen password",
-      label: "Password",
-      required: true,
-    },
-    confirmPassword: {
-      type: "password",
-      onChange: () => {},
-      placeholder: "Confirm your chosen password",
-      label: "Confirm Password",
-      required: true,
-    },
-  });
   const { credentials, setCredentials, signUp } = useSignUp();
   return (
-    <form className="flex flex-col gap-6" onSubmit={signUp}>
-      {Object.keys(inputMap).map((key) => {
-        const { label, type, onChange, placeholder, required } = inputMap[key];
-        return (
-          <div key={`k-${key}`} className="flex flex-col">
-            <label htmlFor={key}>{label}</label>
-            <input
-              value={(credentials as unknown as Record<string, string>)[key]}
-              type={type}
-              onChange={(e) =>
-                setCredentials((prev) => ({ ...prev, [key]: e.target.value }))
-              }
-              placeholder={placeholder}
-              id={key}
-              required={required}
-              className="rounded bg-gray-100 text-gray-900 px-2 py-1"
-            />
-          </div>
-        );
-      })}
-      <button
-        type="submit"
-        className="bg-gradient-to-b from-lime-900 to-lime-700 hover:brightness-125 font-medium text-gray-100 shadow rounded py-2"
-      >
-        Submit
-      </button>
+    <form className="flex flex-col gap-4" onSubmit={signUp}>
+      {fields.map(({ key, label, type, placeholder, required, autoComplete }) => (
+        <Input
+          key={key}
+          id={key}
+          label={label}
+          type={type}
+          value={credentials[key]}
+          onChange={(e) =>
+            setCredentials((prev) => ({ ...prev, [key]: e.target.value }))
+          }
+          placeholder={placeholder}
+          required={required}
+          autoComplete={autoComplete}
+        />
+      ))}
+      <Button type="submit" block size="lg" className="mt-1">
+        Create account
+      </Button>
     </form>
   );
 }

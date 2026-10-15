@@ -1,31 +1,42 @@
-import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useState } from "react";
-import postMove from "../../api/postMove";
-import { Game, MovePositions, PieceType } from "../../types";
+import { useState } from "react";
+import { PieceType } from "../../types";
+import Modal from "../ui/Modal";
+import Button from "../ui/Button";
+import cn from "../ui/cn";
 
 interface UpgradePawnModalProps {
   isOpen: boolean;
   closeModal: () => void;
   chessPieces: Record<string, string>;
-  game: Game;
-  movePositions: MovePositions;
-  setGame: (game: Game) => void;
+  onUpgrade: (upgradeType: PieceType) => Promise<unknown>;
 }
+
+const OPTIONS: PieceType[] = ["QUEEN", "ROOK", "KNIGHT", "BISHOP"];
 
 export default function UpgradePawnModal({
   isOpen,
   closeModal,
   chessPieces,
-  game,
-  movePositions,
-  setGame,
+  onUpgrade,
 }: UpgradePawnModalProps) {
   const [upgradeSelection, setUpgradeSelection] = useState<PieceType | "">("");
+  const [isUpgrading, setIsUpgrading] = useState(false);
 
   async function handleClick() {
-    const { x, y, x1, y1} = movePositions;
-    const res = await postMove(game.id, x, y, y1, x1, upgradeSelection);
-    setGame(res.data);
+    if (!upgradeSelection) return;
+    setIsUpgrading(true);
+    try {
+      await onUpgrade(upgradeSelection);
+      setUpgradeSelection("");
+      closeModal();
+    } finally {
+      setIsUpgrading(false);
+    }
+  }
+
+  function handleClose() {
+    if (isUpgrading) return;
+    setUpgradeSelection("");
     closeModal();
   }
 
@@ -34,88 +45,51 @@ export default function UpgradePawnModal({
   }
 
   return (
-    <>
-      <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={closeModal}>
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-gradient-to-b from-gray-900 to-gray-700 p-6 text-left align-middle shadow-xl transition-all">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-lg font-bold leading-6 text-gray-100"
-                  >
-                    Upgrade Pawn
-                  </Dialog.Title>
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-200">
-                      Your pawn has made it to the other side of the board.
-                      Select a type of piece to upgrade it to.
-                    </p>
-                    <div className="flex justify-between mt-3 p-3 rounded-2xl">
-                      {(["QUEEN", "ROOK", "KNIGHT", "BISHOP"] as PieceType[]).map((key) => {
-                        const char = chessPieces[key];
-                        return (
-                          <button
-                            key={key}
-                            onClick={() => setUpgradeSelection(key)}
-                            className={`text-gray-100 hover:bg-gray-600 font-bold p-2 rounded-full w-16 flex flex-col justify-center items-center ${
-                              upgradeSelection === key ? "bg-gray-600" : ""
-                            }`}
-                          >
-                            <span className="text-3xl">{char}</span>
-                            {/* <span className="text-gray-900">{key.at(0) + key.slice(1).toLowerCase()}</span> */}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex justify-between">
-                    <button
-                      disabled={!upgradeSelection}
-                      type="button"
-                      className="inline-flex justify-center rounded-md border border-transparent bg-gradient-to-b from-lime-900 to-lime-700 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-gradient-to-b hover:from-lime-800 hover:to-lime-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                      onClick={handleClick}
-                    >
-                      {upgradeSelection
-                        ? `Upgrade to ${formatPieceName(upgradeSelection)}`
-                        : "Select a piece to upgrade"}
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex justify-center rounded-md border border-transparent bg-gradient-to-b from-red-900 to-red-700 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-gradient-to-b hover:from-red-800 hover:to-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
-                      onClick={closeModal}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
-    </>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Promote your pawn"
+      description="Your pawn reached the last rank. Choose what it becomes."
+      footer={
+        <>
+          <Button variant="ghost" onClick={handleClose} disabled={isUpgrading}>
+            Cancel
+          </Button>
+          <Button disabled={!upgradeSelection || isUpgrading} onClick={handleClick}>
+            {isUpgrading
+              ? "Promoting…"
+              : upgradeSelection
+              ? `Promote to ${formatPieceName(upgradeSelection)}`
+              : "Choose a piece"}
+          </Button>
+        </>
+      }
+    >
+      <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label="Promotion piece">
+        {OPTIONS.map((key) => {
+          const selected = upgradeSelection === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              onClick={() => setUpgradeSelection(key)}
+              className={cn(
+                "focus-ring flex flex-col items-center gap-1 rounded-xl py-3 transition-all",
+                selected
+                  ? "bg-gradient-to-b from-yellow-500 to-yellow-600 text-yellow-950 shadow-glow"
+                  : "bg-gray-900/60 text-gray-100 ring-1 ring-white/10 hover:bg-white/10"
+              )}
+            >
+              <span className="font-chess text-4xl leading-none">{chessPieces[key]}</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wide">
+                {formatPieceName(key)}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </Modal>
   );
 }

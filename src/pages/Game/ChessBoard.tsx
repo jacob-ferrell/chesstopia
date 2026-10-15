@@ -7,6 +7,7 @@ import makeComputerMove from "../../api/makeComputerMove";
 import UpgradePawnModal from "../../components/modals/UpgradePawnModal";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChessPiece, Game, MovePositions, Player, PieceType } from "../../types";
+import cn from "../../components/ui/cn";
 
 import React from "react";
 
@@ -24,52 +25,36 @@ interface SelectedPiece extends ChessPiece {
   possibleMoves?: { x: number; y: number }[];
 }
 
+export const PIECE_ICONS: Record<PieceType, string> = Object.freeze({
+  KING: "♚",
+  QUEEN: "♛",
+  ROOK: "♜",
+  BISHOP: "♝",
+  KNIGHT: "♞",
+  PAWN: "♟",
+});
+
+const FILES = "abcdefgh";
+
 export default function ChessBoard({ game, setGame, player, setLoadingMoves }: ChessBoardProps) {
-
-  const COLORS = Object.freeze({
-    dark: "bg-yellow-900",
-    light: "bg-yellow-600",
-  });
-
-  const PIECE_ICONS: Record<PieceType, string> = Object.freeze({
-    KING: "\u265A",
-    QUEEN: "\u265B",
-    ROOK: "\u265C",
-    BISHOP: "\u265D",
-    KNIGHT: "\u265E",
-    PAWN: "\u265F",
-  });
-
   const [board, setBoard] = useState<Board | null>(null);
-
   const [selectedPiece, setSelectedPiece] = useState<SelectedPiece | null>(null);
-
   const [showUpgradePawnModal, setShowUpgradePawnModal] = useState(false);
+  const [movePositions, setMovePositions] = useState<MovePositions>({ x: 0, y: 0, x1: 0, y1: 0 });
 
   const queryClient = useQueryClient();
 
   const isMirrored = player?.color === "BLACK";
-  const letters = !isMirrored ? "ABCDEFGH" : "HGFEDCBA";
-  const numbers = isMirrored ? "12345678" : "87654321";
-  const isPlayerTurn = player?.isTurn;
-
-  const [movePositions, setMovePositions] = useState<MovePositions>({ x: 0, y: 0, x1: 0, y1: 0 });
-
-  const mirroredStyle = {
-    transform: `rotate(180deg)`,
-  };
+  const isPlayerTurn = !!player?.isTurn && !game.gameOver;
 
   const isDarkSpace = (y: number, x: number) => (y + x) % 2 !== 0;
-
-  const isEnemyPiece = (color: string) => color !== player!.color;
+  const isOwnPiece = (piece: BoardCell) => !!piece && piece.piece.color === player?.color;
 
   function initializeBoard(): Board {
     const board: Board = [];
-
     for (let i = 0; i < 8; i++) {
       board[i] = new Array(8).fill("");
     }
-
     game?.pieces.forEach((piece) => {
       const { y, x } = piece?.position;
       board[y][x] = piece;
@@ -77,43 +62,57 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }: C
     return board;
   }
 
-  async function handleClick(e: React.MouseEvent<HTMLDivElement>, piece: BoardCell, y1: number, x1: number) {
-    const color = (e.currentTarget as HTMLDivElement).dataset.color ?? "";
-    if (isEnemyPiece(color) && !isPossibleMove(y1, x1)) return;
+  async function handleClick(piece: BoardCell, y1: number, x1: number) {
+    if (!isPlayerTurn) return;
 
     if (isPossibleMove(y1, x1)) {
       return await makeMove(y1, x1);
     }
 
-    setSelectedPiece(piece || null);
+    // Clicking an enemy piece (that isn't a capture target) or an empty square deselects.
+    if (!isOwnPiece(piece)) {
+      setSelectedPiece(null);
+      return;
+    }
 
-    if (!piece) return;
+    // Re-clicking the selected piece deselects it.
+    if (selectedPiece?.id === (piece as ChessPiece).id) {
+      setSelectedPiece(null);
+      return;
+    }
 
+    setSelectedPiece(piece as ChessPiece);
     setLoadingMoves(true);
-
-    const possibleMoves = await getPossibleMoves(game.id, (piece as ChessPiece).position.y, (piece as ChessPiece).position.x);
-
-    setLoadingMoves(false);
-    setSelectedPiece((prev) => prev ? ({ ...prev, possibleMoves }) : null);
+    try {
+      const possibleMoves = await getPossibleMoves(
+        game.id,
+        (piece as ChessPiece).position.y,
+        (piece as ChessPiece).position.x
+      );
+      setSelectedPiece((prev) =>
+        prev && prev.id === (piece as ChessPiece).id ? { ...prev, possibleMoves } : prev
+      );
+    } finally {
+      setLoadingMoves(false);
+    }
   }
 
   async function makeMove(y1: number, x1: number) {
-
     const { x, y } = selectedPiece!.position;
 
     if (isPawnUpgrade(selectedPiece, y1)) {
-      setMovePositions({
-        x, y, x1, y1
-      })
+      setMovePositions({ x, y, x1, y1 });
       setShowUpgradePawnModal(true);
       setSelectedPiece(null);
       return;
     }
 
     optimisticallyUpdateGame(x, y, x1, y1);
+    return await submitMove(x, y, x1, y1);
+  }
 
-    let res = await postMove(game.id, x, y, y1, x1);
-
+  async function submitMove(x: number, y: number, x1: number, y1: number, upgradeType?: PieceType) {
+    let res = await postMove(game.id, x, y, y1, x1, upgradeType);
     setGame(res.data);
     if (opponentIsComputer(game) && !res.data.gameOver) {
       res = await makeComputerMove(game.id);
@@ -124,44 +123,14 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }: C
   }
 
   function optimisticallyUpdateGame(x: number, y: number, x1: number, y1: number) {
-    let gamePiecesCopy = [...game.pieces];
-    const index = gamePiecesCopy.findIndex(pieces => pieces?.position?.x === x && pieces?.position?.y === y);
-    gamePiecesCopy[index] = {...gamePiecesCopy[index], position: { x: x1, y: y1 }};
-    setGame((prev: Game | null) => prev ? ({
-      ...prev,
-      pieces: gamePiecesCopy
-    }) : null);
-  }
-
-  function handleMouseOver(e: React.MouseEvent<HTMLDivElement>, y: number, x: number) {
-    const isDark = isDarkSpace(y, x);
-    const possibleMoves = selectedPiece?.possibleMoves;
-    if (!possibleMoves?.length || !isPossibleMove(y, x)) {
-      return;
-    }
-    if (isDark) e.currentTarget.classList.toggle(COLORS.dark);
-    else e.currentTarget.classList.toggle(COLORS.light);
-    e.currentTarget.classList.add("bg-green-500");
-    e.currentTarget.classList.add("cursor-pointer");
-  }
-
-  function handleMouseOut(e: React.MouseEvent<HTMLDivElement>, y: number, x: number) {
-    const space = e.currentTarget;
-    space.classList.remove("bg-green-500");
-    if (isDarkSpace(y, x)) space.classList.add(COLORS.dark);
-    else space.classList.add(COLORS.light);
-    if (isPossibleMove(y, x)) space.classList.remove("cursor-pointer");
+    const gamePiecesCopy = [...game.pieces];
+    const index = gamePiecesCopy.findIndex((p) => p?.position?.x === x && p?.position?.y === y);
+    gamePiecesCopy[index] = { ...gamePiecesCopy[index], position: { x: x1, y: y1 } };
+    setGame((prev: Game | null) => (prev ? { ...prev, pieces: gamePiecesCopy } : null));
   }
 
   function isPossibleMove(y: number, x: number): boolean {
-    if (
-      !selectedPiece?.possibleMoves?.find(
-        (move) => move.x === x && move.y === y
-      )
-    ) {
-      return false;
-    }
-    return true;
+    return !!selectedPiece?.possibleMoves?.find((move) => move.x === x && move.y === y);
   }
 
   useEffect(() => {
@@ -170,92 +139,118 @@ export default function ChessBoard({ game, setGame, player, setLoadingMoves }: C
     }
   }, [game, game?.gameOver]);
 
+  // Deselect whenever the turn passes to the opponent.
+  useEffect(() => {
+    if (!isPlayerTurn) setSelectedPiece(null);
+  }, [isPlayerTurn]);
+
+  // Which visual edge carries the coordinate labels depends on orientation.
+  const labelRankCol = isMirrored ? 7 : 0;
+  const labelFileRow = isMirrored ? 0 : 7;
+
   return (
     <>
       <UpgradePawnModal
-        setGame={(game) => setGame(game)}
-        movePositions={movePositions}
+        onUpgrade={(upgradeType) => {
+          const { x, y, x1, y1 } = movePositions;
+          return submitMove(x, y, x1, y1, upgradeType);
+        }}
         isOpen={showUpgradePawnModal}
         closeModal={() => setShowUpgradePawnModal(false)}
         chessPieces={PIECE_ICONS}
-        game={game}
       />
-      <div className="flex flex-col gap-2">
-        <div className="text-xl  sm:text-2xl flex justify-between pl-9 pr-4 text-gray-200">
-          {letters.split("").map((c) => (
-            <div key={c}>
-              <span>{c}</span>
-            </div>
-          ))}
-        </div>
-        <div className="flex gap-2">
-          <div className="text-xl sm:text-2xl flex flex-col justify-between text-gray-200">
-            {numbers.split("").map((c) => (
-              <div key={c}>
-                <span>{c}</span>
-              </div>
-            ))}
-          </div>
-          {/* Chessboard */}
-          <div
-            className={
-              isMirrored
-                ? "shadow border-b-2 border-l-2 border-black transform rotate-180"
-                : "shadow border-t-2 border-r-2 border-black"
-            }
-            style={{ width: "100%", maxWidth: "100vw", overflowX: "auto", overflowY: "hidden", }}
-          >
-            {board?.map((row, r) => (
-              <div key={r} className="flex h-10 sm:h-12">
-                {row?.map((col, c) => {
-                  const piece = col;
-                  const chessPiece = piece as ChessPiece | "";
-                  const greenColor =
-                    selectedPiece?.id === (chessPiece as ChessPiece)?.id ? "text-green-500" : "";
-                  const cursor =
-                    (chessPiece as ChessPiece)?.piece?.color == player?.color
-                      ? "cursor-pointer"
-                      : "cursor-default";
-                  const isKingInCheck =
-                    game?.playerInCheck === player?.color &&
-                    (chessPiece as ChessPiece)?.piece?.type === "KING" &&
-                    (chessPiece as ChessPiece)?.piece?.color === player?.color;
-                  const bgColor = isKingInCheck
-                    ? "bg-red-600"
-                    : !isDarkSpace(r, c)
-                    ? COLORS.light
-                    : COLORS.dark;
-                  return (
-                    <div
-                      key={r + c}
-                      className={`w-10 sm:w-12 h-10 sm:h-12 text-4xl sm:text-5xl border-b-2 border-l-2 border-black ${bgColor} ${greenColor} ${cursor}`}
-                      onMouseOver={(e) => handleMouseOver(e, r, c)}
-                      onMouseOut={(e) => handleMouseOut(e, r, c)}
-                      style={isMirrored ? mirroredStyle : undefined}
-                      data-color={(chessPiece as ChessPiece)?.piece?.color}
-                      onClick={(e) =>
-                        isPlayerTurn ? handleClick(e, piece, r, c) : undefined
-                      }
+
+      <div className="w-full max-w-[560px] rounded-xl bg-board-frame p-1.5 shadow-card ring-1 ring-black/40 sm:p-2">
+        <div
+          role="grid"
+          aria-label="Chess board"
+          className={cn(
+            "grid aspect-square w-full grid-cols-8 grid-rows-8 overflow-hidden rounded-md",
+            isMirrored && "rotate-180"
+          )}
+        >
+          {board?.map((row, r) =>
+            row.map((cell, c) => {
+              const piece = cell as ChessPiece | "";
+              const dark = isDarkSpace(r, c);
+              const selected = !!piece && selectedPiece?.id === piece.id;
+              const possible = isPossibleMove(r, c);
+              const capture = possible && !!piece;
+              const kingInCheck =
+                !!piece &&
+                piece.piece.type === "KING" &&
+                game.playerInCheck === piece.piece.color;
+              const clickable = isPlayerTurn && (isOwnPiece(piece) || possible);
+
+              return (
+                <div
+                  key={`${r}-${c}`}
+                  role="gridcell"
+                  aria-label={`${FILES[c]}${8 - r}${piece ? ` ${piece.piece.color.toLowerCase()} ${piece.piece.type.toLowerCase()}` : ""}`}
+                  onClick={() => handleClick(piece, r, c)}
+                  className={cn(
+                    "group relative flex select-none items-center justify-center",
+                    dark ? "bg-board-dark" : "bg-board-light",
+                    clickable ? "cursor-pointer" : "cursor-default",
+                    isMirrored && "rotate-180"
+                  )}
+                >
+                  {/* Highlight layers */}
+                  {kingInCheck && (
+                    <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,rgba(220,38,38,0.95)_0%,rgba(220,38,38,0.55)_45%,transparent_72%)]" />
+                  )}
+                  {selected && (
+                    <span className="pointer-events-none absolute inset-0 bg-lime-400/50" />
+                  )}
+                  {possible && !capture && (
+                    <span className="pointer-events-none absolute h-[30%] w-[30%] rounded-full bg-gray-900/30 transition-transform group-hover:scale-125 group-hover:bg-lime-500/80" />
+                  )}
+                  {capture && (
+                    <span className="pointer-events-none absolute inset-[6%] rounded-full border-[0.3rem] border-gray-900/30 transition-colors group-hover:border-lime-500/90 sm:border-[0.38rem]" />
+                  )}
+
+                  {/* Coordinates */}
+                  {c === labelRankCol && (
+                    <span
+                      className={cn(
+                        "pointer-events-none absolute left-[5%] top-[3%] text-[clamp(0.5rem,1.9vw,0.7rem)] font-bold leading-none",
+                        dark ? "text-yellow-600/90" : "text-yellow-900/80"
+                      )}
                     >
-                      <span
-                        className={
-                          (chessPiece as ChessPiece)?.id === selectedPiece?.id
-                            ? "text-green-500"
-                            : (chessPiece as ChessPiece)?.piece?.color === "WHITE"
-                            ? "text-gray-200"
-                            : (chessPiece as ChessPiece)?.piece?.color === "BLACK"
-                            ? "text-zinc-900"
-                            : ""
-                        }
-                      >
-                        {(chessPiece as ChessPiece)?.piece ? PIECE_ICONS[(chessPiece as ChessPiece)?.piece?.type] : ""}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
+                      {8 - r}
+                    </span>
+                  )}
+                  {r === labelFileRow && (
+                    <span
+                      className={cn(
+                        "pointer-events-none absolute bottom-[3%] right-[6%] text-[clamp(0.5rem,1.9vw,0.7rem)] font-bold leading-none",
+                        dark ? "text-yellow-600/90" : "text-yellow-900/80"
+                      )}
+                    >
+                      {FILES[c]}
+                    </span>
+                  )}
+
+                  {/* Piece */}
+                  {piece && (
+                    <span
+                      className={cn(
+                        "relative font-chess leading-none transition-transform duration-150",
+                        piece.piece.color === "WHITE"
+                          ? "text-gray-50 [text-shadow:0_1px_2px_rgba(0,0,0,0.7),0_0_1px_rgba(0,0,0,0.9)]"
+                          : "text-zinc-900 [text-shadow:0_1px_1px_rgba(255,255,255,0.18)]",
+                        selected && "scale-110",
+                        clickable && isOwnPiece(piece) && "group-hover:scale-110"
+                      )}
+                      style={{ fontSize: "clamp(1.5rem, 9.5vw, 3.1rem)" }}
+                    >
+                      {PIECE_ICONS[piece.piece.type]}
+                    </span>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </>

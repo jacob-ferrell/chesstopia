@@ -7,9 +7,8 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ setGame }: DashboardProps) {
-
   return (
-    <div className="w-full h-full pt-4 flex flex-col gap-2 items-center">
+    <div className="animate-fade-up flex w-full flex-col gap-5">
       <Tabs setGame={setGame} />
     </div>
   );
