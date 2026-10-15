@@ -44,7 +44,9 @@ function App() {
   async function connectStompClient() {
 
     //const { headerName, token } = await fetchCsrfToken();
-    const websocketURL = (import.meta.env.VITE_SERVER as string)
+    // Empty VITE_SERVER means same origin (the dev server proxies /websocket).
+    const serverOrigin = (import.meta.env.VITE_SERVER as string) || window.location.origin;
+    const websocketURL = serverOrigin
       .replace("https://", "wss://")
       .replace("http://", "ws://") + "/websocket";
 

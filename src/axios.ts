@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 
-const baseURL = import.meta.env.VITE_SERVER + "/api";
+// An empty VITE_SERVER means "same origin": the Vite dev server proxies /api.
+const baseURL = `${import.meta.env.VITE_SERVER ?? ""}/api`;
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL,
